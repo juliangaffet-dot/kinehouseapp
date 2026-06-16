@@ -5,28 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Kine House — Rutinas</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="/banco.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#f4f5f7;
-  --card:#ffffff;
-  --dark:#1C1C1E;
-  --mid:#3A3A3C;
-  --accent:#2E75B6;
-  --green:#34A853;
-  --red:#E24B4A;
-  --yellow:#FFC107;
-  --text:#1C1C1E;
-  --muted:#6b7280;
-  --border:#e5e7eb;
-  --radius:10px;
-  --shadow:0 1px 4px rgba(0,0,0,0.08);
+  --bg:#f4f5f7;--card:#ffffff;--dark:#1C1C1E;--mid:#3A3A3C;--accent:#2E75B6;
+  --green:#34A853;--red:#E24B4A;--text:#1C1C1E;--muted:#6b7280;
+  --border:#e5e7eb;--radius:10px;--shadow:0 1px 4px rgba(0,0,0,0.08);
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
 a{text-decoration:none;color:inherit}
-
-/* ── TOPBAR ── */
 .topbar{background:var(--dark);color:#fff;display:flex;align-items:center;padding:0 20px;height:54px;gap:16px;position:sticky;top:0;z-index:100}
 .topbar .logo{font-size:16px;font-weight:700;letter-spacing:.5px;color:#fff}
 .topbar .logo span{color:var(--accent);margin-left:2px}
@@ -35,23 +24,12 @@ a{text-decoration:none;color:inherit}
 .topbar nav a:hover,.topbar nav a.active{background:rgba(255,255,255,0.12);color:#fff}
 .btn-back{color:#ccc;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:6px;border:none;background:none;transition:all .15s}
 .btn-back:hover{background:rgba(255,255,255,0.1);color:#fff}
-
-/* ── PAGES ── */
 .page{display:none;padding:20px;max-width:1100px;margin:0 auto}
 .page.active{display:block}
-
-/* ── CARDS ── */
 .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
-.card-title{font-size:16px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.card-title .icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
-
-/* ── GRID ── */
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.card-title{font-size:16px;font-weight:600;margin-bottom:16px}
 .grid-auto{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
-@media(max-width:640px){.grid-2,.grid-3{grid-template-columns:1fr}.grid-auto{grid-template-columns:1fr 1fr}}
-
-/* ── FORMS ── */
+@media(max-width:640px){.grid-auto{grid-template-columns:1fr 1fr}}
 .form-group{margin-bottom:14px}
 .form-group label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
 .form-group input,.form-group select,.form-group textarea{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:14px;background:#fff;transition:border .15s;font-family:inherit}
@@ -59,29 +37,19 @@ a{text-decoration:none;color:inherit}
 .form-group textarea{resize:vertical;min-height:70px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:480px){.form-row{grid-template-columns:1fr}}
-
-/* ── BUTTONS ── */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;font-family:inherit}
 .btn:hover{background:#f3f4f6}
 .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
 .btn-primary:hover{background:#1d5fa3}
-.btn-success{background:var(--green);color:#fff;border-color:var(--green)}
-.btn-success:hover{background:#288c42}
 .btn-danger{color:var(--red);border-color:#fca5a5}
 .btn-danger:hover{background:#fef2f2}
 .btn-sm{padding:5px 12px;font-size:12px}
-.btn-icon{padding:7px;border-radius:7px}
-.btn-group{display:flex;gap:8px;flex-wrap:wrap}
-
-/* ── PACIENTE CARD ── */
 .pac-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;cursor:pointer;transition:all .18s;border:2px solid transparent;display:flex;flex-direction:column;gap:6px}
 .pac-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 12px rgba(46,117,182,.15)}
 .pac-card .pac-avatar{width:44px;height:44px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;margin-bottom:6px}
 .pac-card .pac-name{font-size:15px;font-weight:700}
 .pac-card .pac-meta{font-size:12px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
 .pac-card .pac-badge{font-size:11px;background:#EAF0FB;color:var(--accent);padding:2px 8px;border-radius:20px;font-weight:600}
-
-/* ── FICHA PACIENTE ── */
 .ficha-header{display:flex;align-items:center;gap:16px;margin-bottom:20px}
 .ficha-avatar{width:60px;height:60px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;flex-shrink:0}
 .ficha-info h2{font-size:20px;font-weight:700}
@@ -89,16 +57,12 @@ a{text-decoration:none;color:inherit}
 .tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;margin:2px}
 .tag-obj{background:#e0f2fe;color:#0369a1}
 .tag-les{background:#fef3c7;color:#92400e}
-
-/* ── TABS ── */
 .tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px}
 .tab-btn{padding:10px 20px;font-size:13px;font-weight:600;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
 .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
-
-/* ── HISTORIAL ── */
-.rutina-item{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s;border:1.5px solid transparent}
+.rutina-item{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin-bottom:10px;display:flex;align-items:center;gap:14px;transition:all .15s;border:1.5px solid transparent}
 .rutina-item:hover{border-color:var(--accent)}
 .rutina-item .ri-icon{width:38px;height:38px;background:#EAF0FB;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
 .rutina-item .ri-info{flex:1}
@@ -106,15 +70,12 @@ a{text-decoration:none;color:inherit}
 .rutina-item .ri-meta{font-size:12px;color:var(--muted)}
 .rutina-item .ri-actions{display:flex;gap:6px;opacity:0;transition:opacity .15s}
 .rutina-item:hover .ri-actions{opacity:1}
-
-/* ── TABLA RUTINA ── */
 .sesion-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
 .stab{padding:6px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);transition:all .15s}
 .stab.active{color:#fff;border-color:transparent}
 .stab.s1.active{background:#2E75B6}
 .stab.s2.active{background:#375623}
 .stab.s3.active{background:#843C0C}
-
 .tabla-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border)}
 table.rutina-table{width:100%;border-collapse:collapse;min-width:680px}
 table.rutina-table thead tr{background:var(--mid)}
@@ -136,15 +97,11 @@ table.rutina-table td input:focus,table.rutina-table td select:focus{outline:non
 .btn-yt{background:none;border:none;cursor:pointer;color:#c00;font-size:15px;padding:2px;line-height:1}
 .btn-yt:hover{color:#900}
 .btn-yt:disabled{color:#ccc;cursor:default}
-
-/* ── RESUMEN VOLUMEN ── */
 .vol-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:14px}
 .vol-card{background:#f8faff;border-radius:8px;padding:10px 12px;border:1px solid #dce8f8}
 .vol-card .vg{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase}
 .vol-card .vn{font-size:22px;font-weight:700;color:var(--accent)}
 .vol-card .vl{font-size:10px;color:var(--muted)}
-
-/* ── EVOLUCIÓN CARGAS ── */
 .carga-form{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;align-items:end;margin-bottom:16px}
 .chart-wrap{position:relative;height:260px;margin-top:10px}
 .carga-hist{max-height:220px;overflow-y:auto;margin-top:12px}
@@ -155,29 +112,19 @@ table.rutina-table td input:focus,table.rutina-table td select:focus{outline:non
 .carga-row .cr-extra{color:var(--muted);flex:1}
 .carga-row .cr-del{margin-left:auto;color:var(--red);cursor:pointer;font-size:13px;opacity:.5}
 .carga-row .cr-del:hover{opacity:1}
-
-/* ── EMPTY STATES ── */
 .empty{text-align:center;padding:40px 20px;color:var(--muted)}
 .empty .empty-icon{font-size:40px;margin-bottom:10px}
 .empty p{margin-bottom:14px}
-
-/* ── MODAL ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:16px}
 .modal-overlay.open{display:flex}
 .modal{background:#fff;border-radius:14px;padding:24px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
 .modal h3{font-size:17px;font-weight:700;margin-bottom:18px}
 .modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
-
-/* ── TOAST ── */
 .toast{position:fixed;bottom:20px;right:20px;background:var(--dark);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;z-index:300;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none}
 .toast.show{opacity:1;transform:none}
-
-/* ── MOBILE ── */
 @media(max-width:640px){
-  .topbar nav{gap:2px}
-  .topbar nav a{padding:5px 8px;font-size:12px}
-  .page{padding:12px}
-  .ficha-header{flex-direction:column;align-items:flex-start}
+  .topbar nav{gap:2px}.topbar nav a{padding:5px 8px;font-size:12px}
+  .page{padding:12px}.ficha-header{flex-direction:column;align-items:flex-start}
   .rutina-item .ri-actions{opacity:1}
 }
 </style>
@@ -186,12 +133,9 @@ table.rutina-table td input:focus,table.rutina-table td select:focus{outline:non
 
 <div class="topbar">
   <div class="logo">Kine<span>House</span></div>
-  <nav>
-    <a href="#" class="active" data-page="page-pacientes" onclick="navTo('page-pacientes',this)">Pacientes</a>
-  </nav>
+  <nav><a href="#" class="active" onclick="navTo('page-pacientes',this)">Pacientes</a></nav>
 </div>
 
-<!-- ══ PÁGINA: LISTA PACIENTES ══ -->
 <div class="page active" id="page-pacientes">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
     <div>
@@ -208,7 +152,6 @@ table.rutina-table td input:focus,table.rutina-table td select:focus{outline:non
   </div>
 </div>
 
-<!-- ══ PÁGINA: FICHA PACIENTE ══ -->
 <div class="page" id="page-ficha">
   <button class="btn-back" onclick="navTo('page-pacientes',null);cargarPacientes()">← Volver</button>
   <div style="margin-top:14px">
@@ -224,58 +167,30 @@ table.rutina-table td input:focus,table.rutina-table td select:focus{outline:non
         <button class="btn btn-sm btn-danger" onclick="eliminarPaciente()">🗑 Eliminar</button>
       </div>
     </div>
-
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('tab-rutinas',this)">📋 Rutinas</button>
       <button class="tab-btn" onclick="switchTab('tab-cargas',this)">📈 Evolución de cargas</button>
     </div>
-
-    <!-- TAB: RUTINAS -->
     <div class="tab-panel active" id="tab-rutinas">
       <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
         <button class="btn btn-primary" onclick="nuevaRutina()">＋ Nueva rutina</button>
       </div>
       <div id="lista-rutinas"></div>
     </div>
-
-    <!-- TAB: CARGAS -->
     <div class="tab-panel" id="tab-cargas">
       <div class="card" style="margin-bottom:16px">
         <div class="card-title">Registrar carga</div>
         <div class="carga-form">
-          <div class="form-group" style="margin:0">
-            <label>Ejercicio</label>
-            <select id="carga-ej" onchange="cargarHistorialCarga()">
-              <option value="">— Elegí —</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin:0">
-            <label>Fecha</label>
-            <input type="date" id="carga-fecha"/>
-          </div>
-          <div class="form-group" style="margin:0">
-            <label>Kg</label>
-            <input type="number" id="carga-kg" placeholder="ej: 80" step="0.5"/>
-          </div>
-          <div class="form-group" style="margin:0">
-            <label>Reps</label>
-            <input type="text" id="carga-reps" placeholder="ej: 8"/>
-          </div>
-          <div class="form-group" style="margin:0">
-            <label>RIR</label>
-            <input type="text" id="carga-rir" placeholder="ej: 2"/>
-          </div>
-          <div class="form-group" style="margin:0">
-            <label>&nbsp;</label>
-            <button class="btn btn-primary" onclick="guardarCarga()" style="width:100%">Guardar</button>
-          </div>
+          <div class="form-group" style="margin:0"><label>Ejercicio</label><select id="carga-ej" onchange="cargarHistorialCarga()"><option value="">— Elegí —</option></select></div>
+          <div class="form-group" style="margin:0"><label>Fecha</label><input type="date" id="carga-fecha"/></div>
+          <div class="form-group" style="margin:0"><label>Kg</label><input type="number" id="carga-kg" placeholder="ej: 80" step="0.5"/></div>
+          <div class="form-group" style="margin:0"><label>Reps</label><input type="text" id="carga-reps" placeholder="ej: 8"/></div>
+          <div class="form-group" style="margin:0"><label>RIR</label><input type="text" id="carga-rir" placeholder="ej: 2"/></div>
+          <div class="form-group" style="margin:0"><label>&nbsp;</label><button class="btn btn-primary" onclick="guardarCarga()" style="width:100%">Guardar</button></div>
         </div>
       </div>
-
       <div class="card">
-        <div class="card-title">
-          Evolución — <span id="carga-ej-label" style="color:var(--accent)">seleccioná un ejercicio</span>
-        </div>
+        <div class="card-title">Evolución — <span id="carga-ej-label" style="color:var(--accent)">seleccioná un ejercicio</span></div>
         <div class="chart-wrap"><canvas id="chart-cargas"></canvas></div>
         <div class="carga-hist" id="carga-hist"></div>
       </div>
@@ -283,27 +198,19 @@ table.rutina-table td input:focus,table.rutina-table td select:focus{outline:non
   </div>
 </div>
 
-<!-- ══ PÁGINA: ARMADOR DE RUTINA ══ -->
 <div class="page" id="page-rutina">
   <button class="btn-back" onclick="volverFicha()">← Volver a la ficha</button>
   <div style="margin-top:14px">
     <div class="card" style="margin-bottom:14px">
-      <div style="display:grid;grid-template-columns:2fr 1fr 2fr;gap:12px;align-items:end;flex-wrap:wrap">
-        <div class="form-group" style="margin:0">
-          <label>Nombre de la rutina</label>
-          <input id="rut-nombre" placeholder="Ej: Fuerza Semana 1"/>
-        </div>
-        <div class="form-group" style="margin:0">
-          <label>Fecha</label>
-          <input type="date" id="rut-fecha"/>
-        </div>
+      <div style="display:grid;grid-template-columns:2fr 1fr 2fr;gap:12px;align-items:end">
+        <div class="form-group" style="margin:0"><label>Nombre de la rutina</label><input id="rut-nombre" placeholder="Ej: Fuerza Semana 1"/></div>
+        <div class="form-group" style="margin:0"><label>Fecha</label><input type="date" id="rut-fecha"/></div>
         <div style="display:flex;gap:8px;justify-content:flex-end;align-items:flex-end">
-          <button class="btn" onclick="window.print()">🖨 PDF</button>
+          <button class="btn" onclick="generarPDFActual()">📄 Descargar PDF</button>
           <button class="btn btn-primary" onclick="guardarRutina()">💾 Guardar rutina</button>
         </div>
       </div>
     </div>
-
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
       <div class="sesion-tabs">
         <button class="stab s1 active" onclick="switchSes(1)">Sesión 1</button>
@@ -313,7 +220,6 @@ table.rutina-table td input:focus,table.rutina-table td select:focus{outline:non
       <button class="btn btn-sm" onclick="agregarFila()">＋ Agregar fila</button>
       <button class="btn btn-sm btn-danger" onclick="limpiarSes()">🗑 Limpiar sesión</button>
     </div>
-
     <div class="tabla-wrap">
       <table class="rutina-table">
         <thead>
@@ -336,8 +242,6 @@ table.rutina-table td input:focus,table.rutina-table td select:focus{outline:non
         <tbody id="rut-tbody"></tbody>
       </table>
     </div>
-
-    <!-- Resumen volumen -->
     <div class="card" style="margin-top:14px">
       <div class="card-title">Resumen de volumen (todas las sesiones)</div>
       <div class="vol-grid" id="vol-grid"></div>
@@ -345,7 +249,6 @@ table.rutina-table td input:focus,table.rutina-table td select:focus{outline:non
   </div>
 </div>
 
-<!-- ══ MODALES ══ -->
 <div class="modal-overlay" id="modal-pac">
   <div class="modal">
     <h3 id="modal-pac-title">Nuevo paciente</h3>
@@ -353,7 +256,7 @@ table.rutina-table td input:focus,table.rutina-table td select:focus{outline:non
       <div class="form-group"><label>Nombre *</label><input id="mp-nombre" placeholder="Juan Pérez"/></div>
       <div class="form-group"><label>Edad</label><input type="number" id="mp-edad" placeholder="25"/></div>
     </div>
-    <div class="form-group"><label>Objetivo</label><input id="mp-obj" placeholder="Ej: aumento de fuerza, rehabilitación..."/></div>
+    <div class="form-group"><label>Objetivo</label><input id="mp-obj" placeholder="Ej: fuerza, rehabilitación..."/></div>
     <div class="form-group"><label>Lesiones / Antecedentes</label><textarea id="mp-les" placeholder="Ej: LCA rodilla derecha 2023..."></textarea></div>
     <div class="form-group"><label>Notas adicionales</label><textarea id="mp-notas" placeholder="Observaciones generales..."></textarea></div>
     <div class="modal-footer">
@@ -364,7 +267,6 @@ table.rutina-table td input:focus,table.rutina-table td select:focus{outline:non
 </div>
 
 <div class="toast" id="toast"></div>
-
 <script src="/app.js"></script>
 </body>
 </html>
