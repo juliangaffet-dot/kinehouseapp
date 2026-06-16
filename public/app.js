@@ -565,7 +565,8 @@ function generarPDFActual() {
   const nombre = document.getElementById('rut-nombre').value || 'Rutina';
   const fecha  = document.getElementById('rut-fecha').value || hoy();
   const sesiones = { 1: sesState[1], 2: sesState[2], 3: sesState[3] };
-  generarPDF(pacienteActual, nombre, fecha, sesiones);
+  const pac = pacienteActual || { nombre: 'Paciente', edad: null, objetivo: '', lesiones: '' };
+  generarPDF(pac, nombre, fecha, sesiones);
 }
 
 // Descarga el PDF de una rutina guardada (desde el historial)
@@ -608,7 +609,7 @@ function generarPDF(paciente, nombreRutina, fecha, sesiones) {
   doc.setFont('helvetica','bold');
   doc.setFontSize(11);
   doc.setTextColor(255,255,255);
-  doc.text(paciente.nombre.toUpperCase(), W/2, y+8, {align:'center'});
+  doc.text((paciente.nombre || 'Paciente').toUpperCase(), W/2, y+8, {align:'center'});
   doc.setFont('helvetica','normal');
   doc.setFontSize(8);
   doc.setTextColor(200,200,200);
@@ -788,7 +789,7 @@ function generarPDF(paciente, nombreRutina, fecha, sesiones) {
   }
 
   // Descargar
-  const pacNombre = paciente.nombre.replace(/\s+/g,'_');
+  const pacNombre = (paciente.nombre || 'paciente').replace(/\s+/g,'_');
   const rutNombre = nombreRutina.replace(/\s+/g,'_');
   doc.save(`rutina_${pacNombre}_${rutNombre}.pdf`);
   toast('📄 PDF descargado');
