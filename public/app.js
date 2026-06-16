@@ -1,12 +1,36 @@
-// ── VIDEO LINKS DIRECTOS (extraídos del Excel Gym) ─────────────────────────────
+// ── VIDEO LINKS (Gym + Warm Up + Campo) ────────────────────────────────────────
 const VIDEO_LINKS = {
+  "2 conos drill": "https://player.vimeo.com/video/336378278?byline=0&badge=0&portrait=0&title=0",
+  "2 conos drill figura 8": "https://www.youtube.com/watch?v=JILjrTzqRWw&pp=ygUVMiBjb25lcyBzaHVmbGxlIGRyaWxs",
   "2 vallas + cajon 1p": "https://www.youtube.com/watch?v=cV4plDkSsPI&pp=ygUYaHVyZGxlIGp1bXAgdG8gYm94IDEgbGVn",
+  "6 conos back pedal": "https://player.vimeo.com/video/429439086?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "6 conos crossover sprint": "https://player.vimeo.com/video/429439173?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "6 conos figura 8": "https://player.vimeo.com/video/429439173?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "6 conos sprint": "https://player.vimeo.com/video/429439317?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "6 conos sprint + shuffle": "https://player.vimeo.com/video/429439131?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "90/90 hip roll": "https://www.youtube.com/embed/X1g1dLD2I34?rel=0",
   "AFSM Hamstring banded prono": "https://youtu.be/wHd8jDVItYM",
   "AFSM hamstring Bridge": "https://www.youtube.com/watch?v=bKxbalKfN1c",
+  "Aceleracion 10 mts": "https://player.vimeo.com/video/391881792?byline=0&badge=0&portrait=0&title=0",
+  "Aceleracion 10 mts con banda": "https://player.vimeo.com/video/393361028?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Aceleracion 20 mts": "https://player.vimeo.com/video/393361048?byline=0&badge=0&portrait=0&title=0",
+  "Aceleracion 5 mts partida baja": "https://player.vimeo.com/video/393182929?byline=0&badge=0&portrait=0&title=0",
   "Apertura con mancuerna": "https://www.youtube.com/watch?v=Nhvz9EzdJ4U&pp=ygUTY2hlc3QgZHVtYmJlbGwgZmx5cw%3D%3D",
   "Aterrizaje desde cajon": "https://www.youtube.com/watch?v=dJjnL3qvX0c&pp=ygURc3RlcCBkcm9wIGxhbmRpbmc%3D",
   "Aterrizaje desde cajon 1p": "https://www.youtube.com/watch?v=Xt5ealMAWP4&pp=ygUhc2luZ2xlIGxlZyBsYW5kaW5nIGZyb20gc3RlcCA1MGNt",
+  "Back Pedal Sprint Estrella": "https://player.vimeo.com/video/336825156?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
   "Back extension Iso hold": "https://www.youtube.com/watch?v=REv46CYcIRE&pp=ygUXYmFjayBleHRlbnNpb24gaXNvIGhvbGQ%3D",
+  "Back pedal + sprint + cross over": "https://player.vimeo.com/video/336822259?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Back pedal - Crossover - Back pedal - Crossover": "https://player.vimeo.com/video/335613823?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Back pedal - Crossover - Sprint - Backpedal": "https://player.vimeo.com/video/335732356?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Backpedal +Crossover + Black pedal": "https://player.vimeo.com/video/336821780?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Backpedal +Crossover + Shuffle": "https://player.vimeo.com/video/336822127?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Backpedal - Shuffle - Backpedal - Shuffle": "https://player.vimeo.com/video/335525716?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Backpedal - Shuffle - Sprint - Shuffle": "https://player.vimeo.com/video/335525320?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Backpedal Sprint estrella": "https://player.vimeo.com/video/336823748?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Backpedal-Sprint-Backpedal-Inside Shuffle": "https://player.vimeo.com/video/335526325?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Backpedal-Sprint-Backpedal-Sprint": "https://player.vimeo.com/video/335523314?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Battle Rope": "https://www.youtube.com/shorts/k3d8XozZyQQ",
   "Bench Press Iso Push": "https://www.youtube.com/shorts/LXKwy423lW4",
   "Biceps Curl Db en Pared": "https://www.youtube.com/watch?v=dwJnlelh-Ss",
   "Biceps Curl Sentado Un brazo": "https://www.youtube.com/shorts/gVRX8Dh9pBs",
@@ -23,10 +47,19 @@ const VIDEO_LINKS = {
   "Bicho muerto pared": "https://youtu.be/eQSfaW5-gLg",
   "Bird Dog Row": "https://www.youtube.com/watch?v=TASldKy5tak",
   "Bird dog": "https://youtu.be/vzU5xrs1gMQ",
+  "Black pedal + freno 1p": "https://player.vimeo.com/video/431125035?byline=0&amp;amp;badge=0&amp;amp;portrait=0&amp;amp;title=0",
+  "Black pedal + sprint": "https://player.vimeo.com/video/431125118?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Blackburns A": "https://www.youtube.com/shorts/f56WzBHQ68E",
+  "Blackpedal + Crossover + Sprint": "https://player.vimeo.com/video/336822000?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Blackpedal + Sprint ida-vueta": "https://player.vimeo.com/video/336378278?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Blackpedal + shuffle + Blackpedal": "https://player.vimeo.com/video/336821425?byline=0&amp;amp;badge=0&amp;amp;portrait=0&amp;amp;title=0",
+  "Blackpedal + shuffle + sprint": "https://player.vimeo.com/video/336821684?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Blackpedal + sprint + shuffle": "https://player.vimeo.com/video/336821554?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
   "Bound 1p alternado": "https://www.youtube.com/shorts/uJ05i0-NNlc?feature=share",
   "Bound Lateral Posicion dividida": "https://www.youtube.com/watch?v=CLxDEqky8SE&pp=ygUbaGFsZiBrbmVlbGluZyBib3VuZCBsYXRlcmFs",
   "Bound Lateral doble contacto": "https://www.youtube.com/watch?v=5VUg0QeOjpc&pp=ygUgYm91bmQgbGF0ZXJhbCBkb3VibGUgY29udGFjdCA0NSA%3D",
   "Bound lateral salto vertical": "https://www.youtube.com/shorts/ur0ug-U19ik?feature=share",
+  "Bounding": "https://player.vimeo.com/video/397230992?byline=0&badge=0&portrait=0&title=0",
   "Broad Jump": "https://youtu.be/vPQv1gmrfUo",
   "Broad Jump con MB": "https://youtu.be/IbY-vQd8Glk",
   "Broad jump 1 p": "https://youtu.be/dxHJ5vxeWYQ",
@@ -35,6 +68,7 @@ const VIDEO_LINKS = {
   "Broad jump banda": "https://youtu.be/sm_WuNdTUtQ",
   "Broad jump doble": "https://youtu.be/lXyiqwNA5ZU",
   "Broad jump single leg catch": "https://www.youtube.com/shorts/Apyu6v2Zdg4",
+  "Burpee": "https://www.youtube.com/shorts/EkK3oVBA__Q",
   "CMJ Rebound": "https://www.youtube.com/shorts/hjKQXQAhw5c?feature=share",
   "Camilla Cuadriceps": "https://www.youtube.com/watch?v=4ZDm5EbiFI8&pp=ygUVbWFjaGluZSBsZWcgZXh0ZW5zaW9u",
   "Chin ups": "https://youtu.be/nMngQ4nxUU0",
@@ -46,9 +80,13 @@ const VIDEO_LINKS = {
   "Clamshell con banda": "https://youtu.be/ta5L-oWqNqA",
   "Clamshell con disco": "https://www.youtube.com/shorts/hxOLcIFa7_I",
   "Clean Pull Trap Bar": "https://youtu.be/TKFAYzW08VA",
+  "Combinacion": "https://player.vimeo.com/video/336355349?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
   "Copenaghe Plank Nivel 1": "https://www.youtube.com/watch?v=VxFQAMzRaQU&pp=ygUQY29wZW5oYWdlbiBwbGFuaw%3D%3D",
   "Copenaghe Plank Nivel 2": "https://www.youtube.com/watch?v=vFMCZiYSXVg&pp=ygUYY29wZW5oYWdlbiBwbGFuayBsZXZlbCAy",
   "Copenaghe plank level 3": "https://youtu.be/eiSBci8icnc",
+  "Crossover + Spint + Crossover": "https://player.vimeo.com/video/336822408?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Crossover + freno": "https://player.vimeo.com/video/431125050?byline=0&amp;amp;badge=0&amp;amp;portrait=0&amp;amp;title=0",
+  "Crossover Estrella": "https://player.vimeo.com/video/336823155?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
   "Crunch": "https://youtu.be/UYnbT0sXNfo",
   "Crush Grip Buceps Curl": "https://youtu.be/at2g_OGyuDE",
   "Cuban Press": "https://www.youtube.com/watch?v=XpcOM9Np9LQ&pp=ygUUY3ViYW4gcHJlc3MgZHVtYmJlbGw%3D",
@@ -72,6 +110,7 @@ const VIDEO_LINKS = {
   "DB Press Inclinado 1 1/4": "https://youtu.be/-M_ABIyO1e8",
   "Deficit Push Ups": "https://www.youtube.com/shorts/xE5y-QW9Yts",
   "Devil Press": "https://www.youtube.com/watch?v=zlqEtAUds-I",
+  "Diamante": "https://player.vimeo.com/video/376049641?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
   "Dips": "https://youtu.be/JR0PUrVAFyA",
   "Dips Asistidos Banda": "https://youtu.be/lYNJ292qeu8",
   "Dips Asistidos con Cajon": "https://www.youtube.com/watch?v=23gJQsCMW9Y&pp=ygURYXNzaXN0ZWQgZGlwcyBib3g%3D",
@@ -86,6 +125,7 @@ const VIDEO_LINKS = {
   "Drop Jump con salto horizontal": "https://youtu.be/rDaKt2UF4cM",
   "Drop Push Ups": "https://www.youtube.com/shorts/ZyvKuPUIm4s",
   "Drop jump bound lateral 1p": "https://youtu.be/YfZVdfkVxZM",
+  "Espejo Shuffle": "https://player.vimeo.com/video/391900030?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
   "Espinales con banda OH": "https://www.youtube.com/watch?v=Sn70zPVwTGk",
   "Estocada Laeral Estricta": "https://www.youtube.com/shorts/fFecTh8nbKg",
   "Estocada hacia adelante y atras": "https://www.youtube.com/watch?v=ZNVaG1qOH7A",
@@ -98,13 +138,21 @@ const VIDEO_LINKS = {
   "Estocadas Posteriores DB": "https://youtu.be/Q2k3kYbtOcI",
   "Estocadas Posteriores TRX": "https://www.youtube.com/watch?v=vS8ihPgpRDk&pp=ygUTcmV2ZXJzZSBsdW5ndWVzIHRyeA%3D%3D",
   "Estocadas caminadas kb": "https://youtu.be/OFSepehKEsg",
+  "Estrella Bonus": "https://player.vimeo.com/video/336827153?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Extension Toracica en el cajon": "https://www.youtube.com/shorts/Ai3Y8tdIGro?feature=share",
   "Extensive L Hop": "https://youtu.be/3K2Eeqe3efU",
   "Extensive Lateral Hop": "https://www.youtube.com/shorts/-H3ahAMkrE8",
   "Extensive V Hop": "https://youtu.be/E7V0JHfFJ9I",
   "Extensive W Hop": "https://youtu.be/szPpNZeRxF8",
   "Face Pull DB en Banca": "https://www.youtube.com/watch?v=a_GcYbTILRY",
   "Face pull banda": "https://youtu.be/5jgKj8ColLg",
+  "Figura 8": "https://player.vimeo.com/video/336823748?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Figura 8 desaceleracion": "https://player.vimeo.com/video/431125074?byline=0&amp;amp;badge=0&amp;amp;portrait=0&amp;amp;title=0",
+  "Figura de 8": "https://player.vimeo.com/video/342989186?byline=0&amp;amp;badge=0&amp;amp;portrait=0&amp;amp;title=0",
+  "Flexion cadera con rodilla extendida": "https://www.youtube.com/embed/JiKgkQGgTYI?rel=0",
+  "Flexion de hombro banda circular": "https://www.youtube.com/shorts/i0RaR3tqDd0",
   "Floor Press 1b DB": "https://youtu.be/mzd-RUIZUvc",
+  "Foward shuffle conos drills": "https://www.youtube.com/watch?v=MVbRxO36Kxs&pp=ygUVMiBjb25lcyBzaHVmbGxlIGRyaWxs",
   "Gemelos con Barra": "https://www.youtube.com/shorts/hWn1u6qwu6U?feature=share",
   "Gemelos con cajon unilateral": "https://www.youtube.com/shorts/uZABLPh95JU?feature=share",
   "Gemelos con step unilateral": "https://youtu.be/RGPSphSpAQY",
@@ -112,6 +160,9 @@ const VIDEO_LINKS = {
   "Gemelos posicion carrera": "https://www.youtube.com/shorts/1TS3P8j3aHA",
   "Halos": "https://youtu.be/wJcmanVh5EE",
   "Halos KB Arrodillado": "https://www.youtube.com/watch?v=A2jT86tgnII&pp=ygUWaGFsZiBrbmVlbGluZyBoYWxvcyBrYg%3D%3D",
+  "Hip Adduction with band": "https://www.youtube.com/shorts/WCANvVnKQr8",
+  "Hip Cars": "https://www.youtube.com/embed/aOItARpIaPk?rel=0",
+  "Hip Cars Step": "https://www.youtube.com/embed/Xc5EJJBJaYg?rel=0",
   "Hip Flexion Band Lying": "https://www.youtube.com/shorts/Q87eb6svGfw",
   "Hip Thrust 1 pierna": "https://youtu.be/3KKVWOATE-Q",
   "Hip Thrust 1 pierna DB": "https://youtu.be/KW7yo5x7-HI",
@@ -125,6 +176,7 @@ const VIDEO_LINKS = {
   "Hop + bound lateral vallas": "https://www.youtube.com/shorts/Pg0VrYwa0SQ",
   "Hop lateral + salto al cajon 1p": "https://www.youtube.com/shorts/DhPOiZNMnzA",
   "Incline DB Triceps Kickback": "https://www.youtube.com/watch?v=kR9mqN6rxpQ",
+  "Inside Crossover/ Shuffle/ inside Sprint": "https://player.vimeo.com/video/336827436?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
   "Iso Catch Rodilla": "https://www.youtube.com/shorts/RmOnn8qDoKA?feature=share",
   "Iso Catch rodilla DB": "https://www.youtube.com/shorts/F_uRD2V4I6I?feature=share",
   "Iso Hold Bilateral Barra": "https://www.youtube.com/shorts/kEFQ--PPp8Y",
@@ -149,6 +201,7 @@ const VIDEO_LINKS = {
   "Iso switch cadera": "https://youtu.be/h1RZIyFcXHs",
   "Iso switch tobillo": "https://youtube.com/shorts/68myTQgY6Ok?si=rsSEgHSZfZe18Hcx",
   "Jimmy Jumps": "https://youtu.be/bfYjukaljNE",
+  "Jumping Lungues": "https://www.youtube.com/watch?v=iJMsF7fzrOM&pp=ygUOanVtcGluZyBsdW5nZXM%3D",
   "KB Swing": "https://www.youtube.com/watch?v=1cVT3ee9mgU&pp=ygUIa2Igc3dpbmc%3D",
   "Kb Biceps Curl": "https://www.youtube.com/watch?v=6Vq_5DJKPcI&pp=ygUTYmljZXBzIGN1cmwgd2l0aCBrYg%3D%3D",
   "L Crunch": "https://youtu.be/2eCLS_biLqM",
@@ -170,6 +223,21 @@ const VIDEO_LINKS = {
   "Med Ball Push Up": "https://www.youtube.com/watch?v=-cqo-oailwk&pp=ygURbWVkIGJhbGwgcHVzaCB1cHM%3D",
   "Mini Band Abduccion banda Split": "https://www.youtube.com/shorts/j1n2H2JNVuc",
   "Monkey row": "https://youtu.be/llm37Rk-1gE",
+  "Mountain Climbers": "https://www.youtube.com/watch?v=kLh-uczlPLg&pp=ygURbW91bnRhaW4gY2xpbWJlcnPSBwkJogoBhyohjO8%3D",
+  "Movilidad asisitida rodilla prono": "https://www.youtube.com/embed/oMROHfOKej0?rel=0",
+  "Movilidad asistida con baston abd": "https://www.youtube.com/shorts/Aq9aMkEj8sM",
+  "Movilidad asistida con baston extension": "https://www.youtube.com/shorts/5yaOFn8jWa0",
+  "Movilidad asistida con baston flex": "https://www.youtube.com/shorts/tepSINDwXiM",
+  "Movilidad asistida con baston supino flexion": "https://www.youtube.com/shorts/kwdlxucSKYY?feature=share",
+  "Movilidad asistida en flexion con fitball": "https://www.youtube.com/watch?v=Fdwewh34EuQ&pp=ygUkc2hvdWxkZXIgYXNzaXN0ZWQgbW9iaWxpdHkgd2l0aCBiYWxs",
+  "Movilidad asistida rot ext pegada cuerpo": "https://www.youtube.com/shorts/YvfIhAKPC4k",
+  "Movilidad de hombro con fitball": "https://www.youtube.com/watch?v=Cxy7eOaCaDc&pp=ygUwc2hvdWxkZXIgYXNzaXN0ZWQgbW9iaWxpdHkgd2l0aCBiYWxsIGluIHRoZSB3YWxs",
+  "Movilidad de rodilla asistida supino": "https://www.youtube.com/embed/OZK3TGelmMs?rel=0",
+  "Movilidad de rodilla sentado": "https://www.youtube.com/embed/Ci_iEOLTLzI?rel=0",
+  "Movilidad de tobillo dorsiflexion": "https://www.youtube.com/embed/_PKyAcTRLtg?rel=0",
+  "Movilidad rodilla cuadrupedia": "https://www.youtube.com/embed/31XUjBOJAaI?rel=0",
+  "Movilidad rodilla supino": "https://www.youtube.com/embed/FpEQekw8zrw?rel=0",
+  "Movilidad tobillo dorsiflexion": "https://www.youtube.com/shorts/7jOwuwNk8OM?feature=share",
   "OCI Trap Bar Jump": "https://youtu.be/o4nw75xG29w",
   "Oci Split Squat Trap Bar": "https://youtu.be/u3NJUx3EfX8",
   "Palof Press Dinamico": "https://www.youtube.com/shorts/5Cx9dncLohs",
@@ -218,11 +286,15 @@ const VIDEO_LINKS = {
   "Plancha lateral con rotacion": "https://youtu.be/RXlHKL_NEN8",
   "Plancha lateral corta": "https://youtu.be/wSXlpIr6dqQ",
   "Plancha lateral rodilla flex": "https://youtu.be/Zuc4Wie5n9E",
+  "Plancha tocando hombros": "https://www.youtube.com/shorts/S7hSMR1rrw4",
+  "Plancha toque de hombros": "https://www.youtube.com/shorts/ePIdW-pGUrA",
   "Plate Push up": "https://www.youtube.com/watch?v=G0hZD0DGeTA&pp=ygUOcGxhdGUgcHVzaCB1cHM%3D",
   "Pogo Jump single Leg disco": "https://www.youtube.com/shorts/zi7pvalOoXc",
+  "Pogos + Sprint 5 mts": "https://player.vimeo.com/video/397230992?byline=0&badge=0&portrait=0&title=0",
   "Pogos Jump asistidos": "https://youtu.be/CaIAbKHbrTo",
   "Pogos jump": "https://youtu.be/wa1ClvLqSHo",
   "Pogos resistidos banda": "https://www.youtube.com/shorts/2WU8dKoaTTo",
+  "Posicion de oso + elevacion cadera": "https://www.youtube.com/watch?v=XK_8DSVspMA&pp=ygUeYmVhciBwb3NpdGlvbiBoYW1zdHJpbmcgc3RyZWNo",
   "Posicion de oso estricto": "https://youtu.be/msgb84j1YKk",
   "Posicion de oso paso KB": "https://youtu.be/7UDhU7w881c",
   "Posicion oso tocando hombros": "https://youtu.be/YN3mZ56Z2w0",
@@ -254,6 +326,7 @@ const VIDEO_LINKS = {
   "Press militar 1 brazo arrodillado": "https://youtu.be/4DUIY95jX6Y",
   "Press militar DB": "https://youtu.be/pQDrcNoDNVM",
   "Press militar DB sentado": "https://youtu.be/R-RTgOxrj88",
+  "Prone A, T , Y": "https://www.youtube.com/watch?v=VkQ_wtU6foo&pp=ygUacHJvbmUgc2hvdWxkZXIgZXhjZXJjaXNlIFQ%3D",
   "Prowler Sled Bounds": "https://youtu.be/wDXVWkgVXJI",
   "Prowler Sled March": "https://youtu.be/Xft-VhdOj2o",
   "Puente 1p con pelota entre rod": "https://www.youtube.com/shorts/6YizMcEe0Vk?feature=share",
@@ -331,6 +404,7 @@ const VIDEO_LINKS = {
   "Salto vertical asisitido con banda": "https://youtu.be/K_rI3GQSRko",
   "Saltos Continuos Trap Bar": "https://www.youtube.com/watch?v=dwRPLD-_QHU",
   "Saltos Vallas": "https://youtu.be/pPnrwBKa3Mo",
+  "Saltos al cajon Crossfitt": "https://www.youtube.com/shorts/7wtrTiQ8HWA",
   "Saltos laterales": "https://youtu.be/iBa4Auv_5nU",
   "Saltos vallas mediales 1p": "https://www.youtube.com/shorts/QLeNCrYMdIs",
   "Seated Lateral Jump": "https://youtu.be/_Bvxdc1vOaY",
@@ -365,10 +439,18 @@ const VIDEO_LINKS = {
   "Sentadilla skater": "https://youtu.be/lDk35dv02hM",
   "Sentadilla zumo Kb": "https://www.youtube.com/watch?v=WepILpVDm4Y&pp=ygUNc3VtbyBzcXVhdCBrYg%3D%3D",
   "Sentadilla zumo con deficit": "https://www.youtube.com/watch?v=9tis3FKZvIo&pp=ygUNc3VtbyBzcXVhdCBrYg%3D%3D",
+  "Shuffle + Crossover + Sprint": "https://player.vimeo.com/video/336821119?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Shuffle + Sprint + Crossover": "https://player.vimeo.com/video/336820996?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Shuffle + Sprint + Shuffle": "https://player.vimeo.com/video/336368625?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Shuffle + Sprint estrella": "https://player.vimeo.com/video/336823155?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Shuffle + freno": "https://player.vimeo.com/video/431125134?byline=0&amp;amp;badge=0&amp;amp;portrait=0&amp;amp;title=0",
+  "Shuffle + freno 1p": "https://player.vimeo.com/video/431125098?byline=0&amp;amp;badge=0&amp;amp;portrait=0&amp;amp;title=0",
+  "Shuffle estrella 5 conos": "https://player.vimeo.com/video/336823155?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
   "Side hop to lateral bound": "https://youtu.be/5maGq-w-4AI",
   "Skater con med ball": "https://youtu.be/IKCYooxLToo",
   "Skater hop extensivos": "https://youtu.be/CaN4zfIPyXU",
   "Skater hop intensivos": "https://youtu.be/gS4F_YrwZVs",
+  "Skipping en el lugar": "https://www.youtube.com/shorts/UyZgB7ig11A",
   "Sled Push Press": "https://www.youtube.com/shorts/EgiQRkVWRq8",
   "Soleo Calf Rises": "https://www.youtube.com/watch?v=CdeIHN4fMYE&pp=ygURc29sZXVzIGNhbGYgcmlzZXM%3D",
   "Soleo elevacion 1p": "https://youtu.be/6snp9ll2cgQ",
@@ -378,7 +460,18 @@ const VIDEO_LINKS = {
   "Split Jump DB": "https://www.youtube.com/shorts/l3zpYh46GBg",
   "Split Squat soleo": "https://www.youtube.com/shorts/iqkCrlM3uD0",
   "Split squat iso hold gemelo": "https://youtu.be/T9e18_KE1MI",
-  "Squat Jump": "https://youtu.be/s07ZL5XfpEI",
+  "Sprint + Backpedal + Sprint": "https://player.vimeo.com/video/336819821?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Sprint + Backpedal + Suffle + Sprint": "https://player.vimeo.com/video/336382111?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Sprint + Cross over + shuffle": "https://player.vimeo.com/video/336820154?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Sprint + Crossover + Crossover + Sprint": "https://player.vimeo.com/video/336383312?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Sprint + Shuffle + Shuffle + Sprint": "https://player.vimeo.com/video/336380769?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Sprint + Shuffle + sprint": "https://player.vimeo.com/video/336819674?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Sprint + Sprint + Sprint": "https://player.vimeo.com/video/336819390?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Sprint + crossover + Sprint": "https://player.vimeo.com/video/336820012?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Sprint Estrella": "https://player.vimeo.com/video/336825156?byline=0&amp;badge=0&amp;portrait=0&amp;title=0",
+  "Sprinter Pogos": "https://player.vimeo.com/video/397773121?byline=0&badge=0&portrait=0&title=0",
+  "Squat Jump": "https://www.youtube.com/watch?v=BRfxI2Es2lE&pp=ygULc3F1YXQganVtcCA%3D",
+  "Squat wall ball": "https://www.youtube.com/shorts/sXsFcANoj-g",
   "Step Down bajo": "https://www.youtube.com/shorts/C06KfKS3CPs",
   "Step down": "https://youtu.be/NkBk9iRwmTA",
   "Subida al Cajon Barra": "https://youtu.be/eRORoA6n_QQ",
@@ -408,6 +501,7 @@ const VIDEO_LINKS = {
   "Wall Drill Banda Knee Drive": "https://player.vimeo.com/video/351974405?byline=0&badge=0&portrait=0&title=0",
   "Wall drill  Switch ( estricto)": "https://player.vimeo.com/video/341092997?byline=0&badge=0&portrait=0&title=0",
   "Wall drill Double Switch": "https://player.vimeo.com/video/395047573?byline=0&badge=0&portrait=0&title=0",
+  "Windmill Arrodillado": "https://www.youtube.com/shorts/P9bXdf5hTXE",
   "bicho muerto con palof press": "https://youtu.be/x4oGIJ4SxdM",
 };
 
@@ -420,10 +514,14 @@ function getVideoUrl(ejercicio) {
 const CATS = Object.keys(BANCO);
 const BLOQUES_DEFAULT = ["A1","A2","A3","B1","B2","B3","C1","C2","D1","D2","Aux","Aux"];
 const CAT_SHORT = {
-  "Rodilla Dom. Empujes":"Rod.Emp","Cadera Dom. Tracción":"Cad.Trac",
-  "Cadera Dom. Empujes":"Cad.Emp","Rodilla Dom. Tracción":"Rod.Trac",
-  "Isométricos MMII":"Isom","Empujes MMSS":"EmpMS","Tracciones MMSS":"TracMS",
-  "Pliometría MMII":"Plio","Otros Auxiliares":"Aux","Zona Media":"ZM","Pliometría MMSS":"PlioMS"
+  "Rodilla Dom. Empujes":"RDE","Cadera Dom. Tracción":"CDT",
+  "Cadera Dom. Empujes":"CDE","Rodilla Dom. Tracción":"RDT",
+  "Isométricos MMII":"ISO","Empujes MMSS":"EMS","Tracciones MMSS":"TMS",
+  "Pliometría MMII":"PLI","Otros Auxiliares":"AUX","Zona Media":"ZM",
+  "Pliometría MMSS":"PMS","Warm Up":"WUP",
+  "Campo - General":"CAM","Campo - 2 conos drills":"C2C",
+  "Campo - 3 conos desaceleracion triangulo":"C3T","Campo - 3 conos drills":"C3C",
+  "Campo - 4 conos drills":"C4C","Campo - 5 conos drills":"C5C","Campo - 6 conos drills":"C6C"
 };
 const GRUPOS = [
   ["Cuádriceps","Rod.Emp"],["Isquiotibiales","Rod.Trac"],["Glúteos","Cad.Emp"],
@@ -677,7 +775,7 @@ function volverFicha() {
 const COLS_SES_COLOR = ['','#2E75B6','#375623','#843C0C'];
 
 function defaultFilas() {
-  return BLOQUES_DEFAULT.map(b => ({ blq:b, met:'', cat:'', ej:'', ser:'', r1:'', r2:'', r3:'', kg1:'', kg2:'', obs:'' }));
+  return BLOQUES_DEFAULT.map(b => ({ blq:b, cat:'', ej:'', ser:'', r1:'', r2:'', r3:'', r4:'', kg1:'', kg2:'', obs:'' }));
 }
 
 function initSesiones() {
@@ -699,6 +797,7 @@ function guardarSesActual() {
     r.cat = v(tr,'.sel-cat'); r.ej  = v(tr,'.sel-ej');
     r.ser = v(tr,'.inp-ser'); r.r1  = v(tr,'.inp-r1');
     r.r2  = v(tr,'.inp-r2'); r.r3  = v(tr,'.inp-r3');
+    r.r4  = v(tr,'.inp-r4');
     r.kg1 = v(tr,'.inp-kg1'); r.kg2 = v(tr,'.inp-kg2');
     r.obs = v(tr,'.inp-obs');
   });
@@ -716,15 +815,16 @@ function renderSesion() {
 function buildFila(r, i, color) {
   const catOpts = CATS.map(c => `<option value="${c}"${r.cat===c?' selected':''}>${c}</option>`).join('');
   const ejOpts = r.cat ? BANCO[r.cat].map(e => `<option value="${e}"${r.ej===e?' selected':''}>${e}</option>`).join('') : '';
+  const catAbrev = r.cat ? (CAT_SHORT[r.cat] || r.cat) : '—';
   return `<tr>
     <td class="td-blq"><input class="inp-blq" value="${r.blq}" style="text-align:center;font-weight:700;font-size:10px;color:${color}"/></td>
-    <td class="td-met"><input class="inp-met" value="${r.met}" placeholder="RDE"/></td>
-    <td class="td-cat"><select class="sel-cat" onchange="onCatChange(this,${i})" style="background:#eaf4ea"><option value="">— Categoría —</option>${catOpts}</select></td>
+    <td class="td-cat" title="${r.cat}"><select class="sel-cat" onchange="onCatChange(this,${i})" style="background:#eaf4ea;font-size:9px"><option value="">${catAbrev||'— Cat —'}</option>${catOpts}</select></td>
     <td class="td-ej"><select class="sel-ej" style="background:#fffde7"><option value="">— Ejercicio —</option>${ejOpts}</select></td>
     <td><input class="inp-ser" value="${r.ser}" placeholder="3" style="text-align:center"/></td>
     <td><input class="inp-r1"  value="${r.r1}"  placeholder="10" style="text-align:center"/></td>
     <td><input class="inp-r2"  value="${r.r2}"  placeholder="10" style="text-align:center"/></td>
     <td><input class="inp-r3"  value="${r.r3}"  placeholder="10" style="text-align:center"/></td>
+    <td><input class="inp-r4"  value="${r.r4||''}"  placeholder="10" style="text-align:center"/></td>
     <td class="td-kg"><input class="inp-kg1" value="${r.kg1}" placeholder="kg" style="background:#eaf4ea;text-align:center"/></td>
     <td class="td-kg"><input class="inp-kg2" value="${r.kg2}" placeholder="kg" style="background:#eaf4ea;text-align:center"/></td>
     <td><input class="inp-obs" value="${r.obs}" placeholder="..."/></td>
@@ -748,7 +848,7 @@ function openYT(i) {
   guardarSesActual();
   const ej = sesState[currentSes][i]?.ej;
   if (!ej) return;
-  window.open('https://www.youtube.com/results?search_query='+encodeURIComponent(ej+' ejercicio tecnica'),'_blank');
+  window.open(getVideoUrl(ej), '_blank');
 }
 
 function agregarFila() {
@@ -959,7 +1059,7 @@ function generarPDF(paciente, nombreRutina, fecha, sesiones) {
       xc += cols[1].w;
 
       // Resto de columnas
-      const resto = [r.ser||'', r.r1||'', r.kg1||'', r.kg2||'', r.obs||''];
+      const resto = [r.ser||'', r.r1||'', r.r2||'', r.r3||'', r.r4||'', r.kg1||'', r.kg2||'', r.obs||''];
       const restoIdx = [2,3,4,5,6];
       doc.setFont('helvetica','normal');
       doc.setFontSize(8);
