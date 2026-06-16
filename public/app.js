@@ -775,7 +775,7 @@ function volverFicha() {
 const COLS_SES_COLOR = ['','#2E75B6','#375623','#843C0C'];
 
 function defaultFilas() {
-  return BLOQUES_DEFAULT.map(b => ({ blq:b, cat:'', ej:'', ser:'', r1:'', r2:'', r3:'', r4:'', kg1:'', kg2:'', obs:'' }));
+  return BLOQUES_DEFAULT.map(b => ({ blq:b, cat:'', ej:'', ser:'', r1:'', r2:'', r3:'', r4:'', kg1:'', kg2:'', kg3:'', kg4:'', obs:'' }));
 }
 
 function initSesiones() {
@@ -799,6 +799,7 @@ function guardarSesActual() {
     r.r2  = v(tr,'.inp-r2'); r.r3  = v(tr,'.inp-r3');
     r.r4  = v(tr,'.inp-r4');
     r.kg1 = v(tr,'.inp-kg1'); r.kg2 = v(tr,'.inp-kg2');
+    r.kg3 = v(tr,'.inp-kg3'); r.kg4 = v(tr,'.inp-kg4');
     r.obs = v(tr,'.inp-obs');
   });
 }
@@ -819,6 +820,7 @@ function buildFila(r, i, color) {
   return `<tr>
     <td class="td-blq"><input class="inp-blq" value="${r.blq}" style="text-align:center;font-weight:700;font-size:10px;color:${color}"/></td>
     <td class="td-cat" title="${r.cat}"><select class="sel-cat" onchange="onCatChange(this,${i})" style="background:#eaf4ea;font-size:9px"><option value="">${catAbrev||'— Cat —'}</option>${catOpts}</select></td>
+    <td class="td-vid"><button class="btn-yt" onclick="openYT(${i})" ${r.ej?'':'disabled'}>▶</button></td>
     <td class="td-ej"><select class="sel-ej" style="background:#fffde7"><option value="">— Ejercicio —</option>${ejOpts}</select></td>
     <td><input class="inp-ser" value="${r.ser}" placeholder="3" style="text-align:center"/></td>
     <td><input class="inp-r1"  value="${r.r1}"  placeholder="10" style="text-align:center"/></td>
@@ -827,8 +829,9 @@ function buildFila(r, i, color) {
     <td><input class="inp-r4"  value="${r.r4||''}"  placeholder="10" style="text-align:center"/></td>
     <td class="td-kg"><input class="inp-kg1" value="${r.kg1}" placeholder="kg" style="background:#eaf4ea;text-align:center"/></td>
     <td class="td-kg"><input class="inp-kg2" value="${r.kg2}" placeholder="kg" style="background:#eaf4ea;text-align:center"/></td>
+    <td class="td-kg"><input class="inp-kg3" value="${r.kg3||''}" placeholder="kg" style="background:#eaf4ea;text-align:center"/></td>
+    <td class="td-kg"><input class="inp-kg4" value="${r.kg4||''}" placeholder="kg" style="background:#eaf4ea;text-align:center"/></td>
     <td><input class="inp-obs" value="${r.obs}" placeholder="..."/></td>
-    <td class="td-vid"><button class="btn-yt" onclick="openYT(${i})" ${r.ej?'':'disabled'}>▶</button></td>
     <td><button onclick="eliminarFila(${i})" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:13px">✕</button></td>
   </tr>`;
 }
