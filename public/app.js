@@ -14,6 +14,7 @@ const GRUPOS = [
   ["Zona Media","ZM"],["Auxiliares","Aux"]
 ];
 
+// ── ESTADO ────────────────────────────────────────────────────────────────────
 let pacienteActual = null;
 let rutinaActual = null;
 let editandoPacId = null;
@@ -21,6 +22,7 @@ let currentSes = 1;
 const sesState = {1:[], 2:[], 3:[]};
 let chartInstance = null;
 
+// ── NAVEGACIÓN ────────────────────────────────────────────────────────────────
 function navTo(pageId, navEl) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(pageId).classList.add('active');
@@ -37,6 +39,7 @@ function switchTab(tabId, btn) {
   if (tabId === 'tab-cargas') cargarSelectEjercicios();
 }
 
+// ── TOAST ─────────────────────────────────────────────────────────────────────
 function toast(msg, dur=2500) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -44,12 +47,14 @@ function toast(msg, dur=2500) {
   setTimeout(() => t.classList.remove('show'), dur);
 }
 
+// ── MODALES ───────────────────────────────────────────────────────────────────
 function abrirModal(id) { document.getElementById(id).classList.add('open'); }
 function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(m => {
   m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
 });
 
+// ── PACIENTES ─────────────────────────────────────────────────────────────────
 async function cargarPacientes() {
   const res = await fetch('/api/pacientes');
   const pacs = await res.json();
@@ -159,6 +164,7 @@ async function eliminarPaciente() {
   cargarPacientes();
 }
 
+// ── RUTINAS ───────────────────────────────────────────────────────────────────
 async function cargarRutinas() {
   const res = await fetch(`/api/pacientes/${pacienteActual.id}/rutinas`);
   const rutinas = await res.json();
@@ -249,6 +255,7 @@ function volverFicha() {
   cargarRutinas();
 }
 
+// ── ARMADOR ───────────────────────────────────────────────────────────────────
 const COLS_SES_COLOR = ['','#2E75B6','#375623','#843C0C'];
 
 function defaultFilas() {
@@ -362,7 +369,8 @@ function actualizarVolumen() {
     : '<p style="color:var(--muted);font-size:12px">Completá series y categorías para ver el resumen.</p>';
 }
 
-// ── PDF ───────────────────────────────────────────────────────────────────────
+// ── GENERAR PDF ───────────────────────────────────────────────────────────────
+// Genera el PDF de la rutina actual en pantalla
 function generarPDFActual() {
   guardarSesActual();
   const nombre = document.getElementById('rut-nombre').value || 'Rutina';
@@ -371,16 +379,19 @@ function generarPDFActual() {
   generarPDF(pacienteActual, nombre, fecha, sesiones);
 }
 
+// Descarga el PDF de una rutina guardada (desde el historial)
 async function descargarPDFById(id, nombre) {
   const res = await fetch(`/api/rutinas/${id}`);
   const r = await res.json();
   generarPDF(pacienteActual, r.nombre, r.fecha, r.sesiones);
 }
 
+// Motor de generación de PDF
 function generarPDF(paciente, nombreRutina, fecha, sesiones) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-  const W = 210, H = 297, ML = 12, MR = 12, MT = 12;
+  const W = 210, H = 297;
+  const ML = 12, MR = 12, MT = 12;
   const CW = W - ML - MR;
   let y = MT;
 
@@ -390,7 +401,9 @@ function generarPDF(paciente, nombreRutina, fecha, sesiones) {
     { h:[132,60,12],   light:[253,240,232] },
   ];
 
-  // HEADER
+  function rgbH(arr) { return `rgb(${arr[0]},${arr[1]},${arr[2]})`; }
+
+  // ── HEADER ────────────────────────────────────────────────────────────────
   doc.setFillColor(28,28,30);
   doc.roundedRect(ML, y, CW, 18, 3, 3, 'F');
   doc.setFont('helvetica','bold');
@@ -402,6 +415,7 @@ function generarPDF(paciente, nombreRutina, fecha, sesiones) {
   doc.setTextColor(170,170,170);
   doc.text('Sistema de Rutinas', ML+5, y+12);
 
+  // Nombre paciente centrado
   doc.setFont('helvetica','bold');
   doc.setFontSize(11);
   doc.setTextColor(255,255,255);
@@ -409,54 +423,68 @@ function generarPDF(paciente, nombreRutina, fecha, sesiones) {
   doc.setFont('helvetica','normal');
   doc.setFontSize(8);
   doc.setTextColor(200,200,200);
-  doc.text(`${paciente.edad ? paciente.edad+' años  ·  ':''} Lic. Julian Gaffet — M.P. 1321`, W/2, y+13, {align:'center'});
+  if (paciente.lic || paciente.edad) {
+    doc.text(`${paciente.edad ? paciente.edad+' años  ·  ':''} Lic. Julian Gaffet — M.P. 1321`, W/2, y+13, {align:'center'});
+  }
+
+  // Fecha derecha
   doc.setFontSize(8);
   doc.setTextColor(200,200,200);
-  doc.text(`${formatFecha(fecha)}`, W-MR-3, y+8, {align:'right'});
+  doc.text(`📅 ${formatFecha(fecha)}`, W-MR-3, y+8, {align:'right'});
   doc.text(nombreRutina, W-MR-3, y+13, {align:'right'});
   y += 22;
 
+  // Objetivo / lesiones
   if (paciente.objetivo || paciente.lesiones) {
     doc.setFillColor(234,240,251);
     doc.roundedRect(ML, y, CW, 8, 2, 2, 'F');
     doc.setFont('helvetica','normal');
     doc.setFontSize(8);
     doc.setTextColor(28,28,30);
-    let info = '';
-    if (paciente.objetivo) info += `Objetivo: ${paciente.objetivo}   `;
-    if (paciente.lesiones) info += `Lesiones: ${paciente.lesiones}`;
-    doc.text(info, ML+4, y+5);
+    let infoText = '';
+    if (paciente.objetivo) infoText += `🎯 Objetivo: ${paciente.objetivo}   `;
+    if (paciente.lesiones) infoText += `⚠️ ${paciente.lesiones}`;
+    doc.text(infoText, ML+4, y+5);
     y += 11;
   }
 
-  // SESIONES
+  // ── SESIONES ──────────────────────────────────────────────────────────────
   [1,2,3].forEach(si => {
     const filas = (sesiones[si]||[]).filter(r => r.ej && r.ej.trim());
     if (!filas.length) return;
+
     const sc = SES_COLORS[(si-1) % SES_COLORS.length];
+    const sesNombre = `SESIÓN ${si}`;
 
-    if (y + 10 + filas.length * 7 > H - 15) { doc.addPage(); y = MT; }
+    // Salto de página si no hay espacio
+    const alturaEstimada = 10 + filas.length * 7 + 6;
+    if (y + alturaEstimada > H - 15) {
+      doc.addPage();
+      y = MT;
+    }
 
+    // Header sesión
     doc.setFillColor(...sc.h);
     doc.roundedRect(ML, y, CW, 8, 2, 2, 'F');
     doc.setFont('helvetica','bold');
     doc.setFontSize(10);
     doc.setTextColor(255,255,255);
-    doc.text(`SESIÓN ${si}`, ML+4, y+5.5);
+    doc.text(sesNombre, ML+4, y+5.5);
     doc.setFont('helvetica','normal');
     doc.setFontSize(7);
     doc.setTextColor(220,220,220);
-    doc.text('Click en el ejercicio para ver el video en YouTube', W-MR-3, y+5.5, {align:'right'});
+    doc.text(`${filas.length} ejercicios  ·  Click en el ejercicio para ver el video en YouTube`, W-MR-3, y+5.5, {align:'right'});
     y += 10;
 
+    // Headers tabla
     const cols = [
-      {label:'BLQ', w:8, align:'center'},
+      {label:'BLQ',  w:8,  align:'center'},
       {label:'EJERCICIO', w:62, align:'left'},
       {label:'SER.', w:10, align:'center'},
       {label:'REPS', w:16, align:'center'},
       {label:'KG/RIR S1', w:20, align:'center'},
       {label:'KG/RIR S2', w:20, align:'center'},
-      {label:'OBS.', w:CW-136, align:'left'},
+      {label:'OBS.',w:CW-8-62-10-16-20-20, align:'left'},
     ];
 
     doc.setFillColor(58,58,60);
@@ -466,67 +494,86 @@ function generarPDF(paciente, nombreRutina, fecha, sesiones) {
     doc.setTextColor(255,255,255);
     let xc = ML;
     cols.forEach(c => {
-      if (c.align==='center') doc.text(c.label, xc+c.w/2, y+4, {align:'center'});
+      if (c.align === 'center') doc.text(c.label, xc + c.w/2, y+4, {align:'center'});
       else doc.text(c.label, xc+2, y+4);
       xc += c.w;
     });
     y += 6;
 
+    // Filas ejercicios
     filas.forEach((r, ri) => {
       if (y + 7 > H - 15) { doc.addPage(); y = MT; }
+
       const bg = ri%2===0 ? sc.light : [255,255,255];
       doc.setFillColor(...bg);
       doc.rect(ML, y, CW, 6.5, 'F');
+
       doc.setDrawColor(210,220,235);
       doc.setLineWidth(0.2);
       doc.line(ML, y+6.5, ML+CW, y+6.5);
 
       xc = ML;
+      // BLQ
       doc.setFont('helvetica','bold');
       doc.setFontSize(8);
       doc.setTextColor(...sc.h);
       doc.text(r.blq||'', xc+cols[0].w/2, y+4.5, {align:'center'});
       xc += cols[0].w;
 
+      // EJERCICIO con hipervínculo
       const ejNombre = r.ej || '';
-      const ytUrl = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(ejNombre + ' ejercicio tecnica');
+      const ytUrl = getVideoUrl(ejNombre);
       doc.setFont('helvetica','normal');
       doc.setFontSize(8.5);
       doc.setTextColor(46,117,182);
+      // Truncar si es muy largo
       let ejLabel = ejNombre;
-      while (doc.getTextWidth(ejLabel) > cols[1].w - 3 && ejLabel.length > 5) ejLabel = ejLabel.slice(0,-1);
+      while (doc.getTextWidth(ejLabel) > cols[1].w - 3 && ejLabel.length > 5) {
+        ejLabel = ejLabel.slice(0,-1);
+      }
       if (ejLabel !== ejNombre) ejLabel += '…';
       doc.textWithLink(ejLabel, xc+1, y+4.5, { url: ytUrl });
+      // Subrayado
       doc.setDrawColor(46,117,182);
       doc.setLineWidth(0.15);
       doc.line(xc+1, y+5.2, xc+1+doc.getTextWidth(ejLabel), y+5.2);
       xc += cols[1].w;
 
+      // Resto de columnas
       const resto = [r.ser||'', r.r1||'', r.kg1||'', r.kg2||'', r.obs||''];
+      const restoIdx = [2,3,4,5,6];
       doc.setFont('helvetica','normal');
       doc.setFontSize(8);
       doc.setTextColor(28,28,30);
-      [2,3,4,5,6].forEach((ci, i) => {
+      restoIdx.forEach((ci, i) => {
         const col = cols[ci];
         const txt = String(resto[i]);
-        if (col.align==='center') doc.text(txt, xc+col.w/2, y+4.5, {align:'center'});
+        if (col.align === 'center') doc.text(txt, xc+col.w/2, y+4.5, {align:'center'});
         else doc.text(txt.substring(0,18), xc+2, y+4.5);
         xc += col.w;
       });
 
+      // Línea vertical separando columnas (sutil)
       doc.setDrawColor(210,220,235);
       let xl = ML + cols[0].w;
-      for(let ci=1; ci<cols.length-1; ci++){ doc.line(xl, y, xl, y+6.5); xl += cols[ci].w; }
+      for(let ci=1; ci<cols.length-1; ci++){
+        doc.line(xl, y, xl, y+6.5);
+        xl += cols[ci].w;
+      }
+
       y += 6.5;
     });
 
+    // Borde de la tabla
     doc.setDrawColor(180,200,220);
     doc.setLineWidth(0.3);
     const tablaH = 6 + filas.length * 6.5;
     doc.rect(ML, y - tablaH, CW, tablaH);
+
     y += 5;
   });
 
+  // ── NOTA PIE ──────────────────────────────────────────────────────────────
   if (y + 10 < H - 8) {
     doc.setDrawColor(210,220,235);
     doc.setLineWidth(0.3);
@@ -535,12 +582,13 @@ function generarPDF(paciente, nombreRutina, fecha, sesiones) {
     doc.setFont('helvetica','italic');
     doc.setFontSize(7.5);
     doc.setTextColor(100,100,100);
-    doc.text('Los nombres de los ejercicios son hipervinculos — hace click para ver el video de tecnica en YouTube.', ML, y);
+    doc.text('💡 Los nombres de los ejercicios son hipervínculos — hacé click para ver el video de técnica en YouTube.', ML, y);
     y += 4;
     doc.setTextColor(160,160,160);
     doc.text(`Kine House  ·  Generado el ${new Date().toLocaleDateString('es-AR')}`, ML, y);
   }
 
+  // Número de página
   const totalPages = doc.internal.getNumberOfPages();
   for(let i=1; i<=totalPages; i++){
     doc.setPage(i);
@@ -550,23 +598,29 @@ function generarPDF(paciente, nombreRutina, fecha, sesiones) {
     doc.text(`${i} / ${totalPages}`, W-MR, H-6, {align:'right'});
   }
 
-  doc.save(`rutina_${paciente.nombre.replace(/\s+/g,'_')}_${nombreRutina.replace(/\s+/g,'_')}.pdf`);
+  // Descargar
+  const pacNombre = paciente.nombre.replace(/\s+/g,'_');
+  const rutNombre = nombreRutina.replace(/\s+/g,'_');
+  doc.save(`rutina_${pacNombre}_${rutNombre}.pdf`);
   toast('📄 PDF descargado');
 }
 
-// ── CARGAS ────────────────────────────────────────────────────────────────────
+// ── EVOLUCIÓN DE CARGAS ───────────────────────────────────────────────────────
 async function cargarSelectEjercicios() {
   const sel = document.getElementById('carga-ej');
   const actual = sel.value;
   sel.innerHTML = '<option value="">— Elegí ejercicio —</option>';
+
   const res = await fetch(`/api/pacientes/${pacienteActual.id}/ejercicios-con-cargas`);
   const conCargas = await res.json();
+
   if (conCargas.length) {
     const grp = document.createElement('optgroup');
     grp.label = '📊 Con historial';
     conCargas.forEach(e => { const o=document.createElement('option'); o.value=e; o.textContent=e; grp.appendChild(o); });
     sel.appendChild(grp);
   }
+
   CATS.forEach(cat => {
     const grp = document.createElement('optgroup');
     grp.label = cat;
@@ -576,6 +630,7 @@ async function cargarSelectEjercicios() {
     });
     sel.appendChild(grp);
   });
+
   if (actual) { sel.value = actual; cargarHistorialCarga(); }
   document.getElementById('carga-fecha').value = hoy();
 }
@@ -596,11 +651,14 @@ function renderChart(cargas) {
   if (!cargas.length) { renderChartVacio(); return; }
   chartInstance = new Chart(ctx, {
     type:'line',
-    data:{ labels: cargas.map(c=>formatFechaCorta(c.fecha)),
-      datasets:[{ label:'Kg', data:cargas.map(c=>c.kg), borderColor:'#2E75B6',
-        backgroundColor:'rgba(46,117,182,.1)', pointBackgroundColor:'#2E75B6',
-        pointRadius:5, tension:.3, fill:true }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+    data:{
+      labels: cargas.map(c=>formatFechaCorta(c.fecha)),
+      datasets:[{ label:'Kg', data:cargas.map(c=>c.kg),
+        borderColor:'#2E75B6', backgroundColor:'rgba(46,117,182,.1)',
+        pointBackgroundColor:'#2E75B6', pointRadius:5, tension:.3, fill:true }]
+    },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
       scales:{ x:{grid:{color:'#f0f0f0'},ticks:{font:{size:11}}},
                y:{grid:{color:'#f0f0f0'},ticks:{font:{size:11}},beginAtZero:false} } }
   });
