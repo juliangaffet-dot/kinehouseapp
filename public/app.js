@@ -822,7 +822,7 @@ function buildFila(r, i, color) {
     <td class="td-cat" title="${r.cat}"><select class="sel-cat" onchange="onCatChange(this,${i})" style="background:#eaf4ea;font-size:9px"><option value="">${catAbrev||'— Cat —'}</option>${catOpts}</select></td>
     <td class="td-vid" style="text-align:center;width:28px"><button class="btn-yt" onclick="openYT(${i})" ${r.ej?'':'disabled'}>▶</button></td>
     <td class="td-ej"><select class="sel-ej" style="background:#fffde7;width:100%"><option value="">— Ejercicio —</option>${ejOpts}</select></td>
-    <td><input class="inp-ser" value="${r.ser}" placeholder="" style="text-align:center"/></td>
+    <td><input class="inp-ser" value="${r.ser}" placeholder="" style="text-align:center" oninput="guardarSesActual();actualizarVolumen()"/></td>
     <td><input class="inp-r1"  value="${r.r1}"  placeholder="" style="text-align:center"/></td>
     <td><input class="inp-r2"  value="${r.r2}"  placeholder="" style="text-align:center"/></td>
     <td><input class="inp-r3"  value="${r.r3}"  placeholder="" style="text-align:center"/></td>
