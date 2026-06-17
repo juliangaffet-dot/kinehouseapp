@@ -723,7 +723,7 @@ async function abrirRutina(id) {
   const r = await res.json();
   rutinaActual = r;
   [1,2,3].forEach(s => {
-    sesState[s] = r.sesiones[s] ? r.sesiones[s].map(row => ({...row})) : defaultFilas();
+    sesState[s] = r.días[s] ? r.días[s].map(row => ({...row})) : defaultFilas();
   });
   currentSes = 1;
   document.getElementById('rut-nombre').value = r.nombre;
@@ -740,21 +740,21 @@ async function guardarRutina() {
   if (!nombre) { toast('⚠️ Poné un nombre a la rutina'); return; }
   if (!fecha)  { toast('⚠️ Seleccioná una fecha'); return; }
   guardarSesActual();
-  const sesiones = { 1: sesState[1], 2: sesState[2], 3: sesState[3] };
+  const días = { 1: sesState[1], 2: sesState[2], 3: sesState[3] };
   if (rutinaActual) {
     await fetch(`/api/rutinas/${rutinaActual.id}`, {
       method:'PUT', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ nombre, fecha, sesiones })
+      body: JSON.stringify({ nombre, fecha, días })
     });
-    rutinaActual = { ...rutinaActual, nombre, fecha, sesiones };
+    rutinaActual = { ...rutinaActual, nombre, fecha, días };
     toast('✅ Rutina actualizada');
   } else {
     const res = await fetch(`/api/pacientes/${pacienteActual.id}/rutinas`, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ nombre, fecha, sesiones })
+      body: JSON.stringify({ nombre, fecha, días })
     });
     const { id } = await res.json();
-    rutinaActual = { id, nombre, fecha, sesiones };
+    rutinaActual = { id, nombre, fecha, días };
     toast('✅ Rutina guardada');
   }
 }
@@ -868,7 +868,7 @@ function eliminarFila(i) {
 }
 
 function limpiarSes() {
-  if (!confirm(`¿Limpiar sesión ${currentSes}?`)) return;
+  if (!confirm(`¿Limpiar día ${currentSes}?`)) return;
   sesState[currentSes] = defaultFilas();
   renderSesion();
 }
@@ -896,20 +896,20 @@ function generarPDFActual() {
   guardarSesActual();
   const nombre = document.getElementById('rut-nombre').value || 'Rutina';
   const fecha  = document.getElementById('rut-fecha').value || hoy();
-  const sesiones = { 1: sesState[1], 2: sesState[2], 3: sesState[3] };
+  const días = { 1: sesState[1], 2: sesState[2], 3: sesState[3] };
   const pac = pacienteActual || { nombre: 'Paciente', edad: null, objetivo: '', lesiones: '' };
-  generarPDF(pac, nombre, fecha, sesiones);
+  generarPDF(pac, nombre, fecha, días);
 }
 
 // Descarga el PDF de una rutina guardada (desde el historial)
 async function descargarPDFById(id, nombre) {
   const res = await fetch(`/api/rutinas/${id}`);
   const r = await res.json();
-  generarPDF(pacienteActual, r.nombre, r.fecha, r.sesiones);
+  generarPDF(pacienteActual, r.nombre, r.fecha, r.días);
 }
 
 // Motor de generación de PDF
-function generarPDF(paciente, nombreRutina, fecha, sesiones) {
+function generarPDF(paciente, nombreRutina, fecha, días) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
   const W = 210, H = 297, ML = 12, MR = 12, MT = 10;
@@ -972,7 +972,7 @@ function generarPDF(paciente, nombreRutina, fecha, sesiones) {
   }
 
   [1,2,3].forEach(si => {
-    const filas = (sesiones[si]||[]).filter(r => r.ej && r.ej.trim());
+    const filas = (días[si]||[]).filter(r => r.ej && r.ej.trim());
     if (!filas.length) return;
     const sc = SES_COLORS[(si-1) % SES_COLORS.length];
     if (y + 10 + filas.length*7 > H-15) { doc.addPage(); y = MT; }
@@ -982,7 +982,7 @@ function generarPDF(paciente, nombreRutina, fecha, sesiones) {
     doc.setFont('helvetica','bold');
     doc.setFontSize(10);
     doc.setTextColor(...WHITE);
-    doc.text('SESION ' + si, ML+4, y+5.5);
+    doc.text('DIA ' + si, ML+4, y+5.5);
     doc.setFont('helvetica','normal');
     doc.setFontSize(7);
     doc.setTextColor(220,220,200);
