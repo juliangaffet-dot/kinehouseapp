@@ -723,7 +723,7 @@ async function abrirRutina(id) {
   const r = await res.json();
   rutinaActual = r;
   [1,2,3].forEach(s => {
-    sesState[s] = r.días[s] ? r.días[s].map(row => ({...row})) : defaultFilas();
+    sesState[s] = r.sesiones[s] ? r.sesiones[s].map(row => ({...row})) : defaultFilas();
   });
   currentSes = 1;
   document.getElementById('rut-nombre').value = r.nombre;
@@ -905,7 +905,7 @@ function generarPDFActual() {
 async function descargarPDFById(id, nombre) {
   const res = await fetch(`/api/rutinas/${id}`);
   const r = await res.json();
-  generarPDF(pacienteActual, r.nombre, r.fecha, r.días);
+  generarPDF(pacienteActual, r.nombre, r.fecha, r.sesiones);
 }
 
 // Motor de generación de PDF
