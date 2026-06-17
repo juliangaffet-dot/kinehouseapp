@@ -524,10 +524,10 @@ const CAT_SHORT = {
   "Campo - 4 conos drills":"C4C","Campo - 5 conos drills":"C5C","Campo - 6 conos drills":"C6C"
 };
 const GRUPOS = [
-  ["Cuádriceps","Rod.Emp"],["Isquiotibiales","Rod.Trac"],["Glúteos","Cad.Emp"],
-  ["Cadera Trac.","Cad.Trac"],["Isométricos","Isom"],["Empujes MMSS","EmpMS"],
-  ["Tracciones MMSS","TracMS"],["Pliometría MMII","Plio"],["Pliometría MMSS","PlioMS"],
-  ["Zona Media","ZM"],["Auxiliares","Aux"]
+  ["Cuádriceps","RDE"],["Isquiotibiales","RDT"],["Glúteos","CDE"],
+  ["Cadera Trac.","CDT"],["Isométricos","ISO"],["Empujes MMSS","EMS"],
+  ["Tracciones MMSS","TMS"],["Pliometría MMII","PLI"],["Pliometría MMSS","PMS"],
+  ["Zona Media","ZM"],["Auxiliares","AUX"]
 ];
 
 // ── ESTADO ────────────────────────────────────────────────────────────────────
