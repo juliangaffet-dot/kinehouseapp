@@ -108,10 +108,12 @@ app.get('/api/pacientes/:id/rutinas', (req, res) => {
 });
 
 app.post('/api/pacientes/:id/rutinas', (req, res) => {
-  const { nombre, fecha, sesiones } = req.body;
+  const { nombre, fecha } = req.body;
+  // El app.js guarda como "días" (con tilde), el server como "sesiones"
+  const datos = req.body.sesiones || req.body['días'] || req.body.dias || [];
   const r = db.prepare(
     'INSERT INTO rutinas (paciente_id, nombre, fecha, sesiones) VALUES (?,?,?,?)'
-  ).run(req.params.id, nombre, fecha, JSON.stringify(sesiones));
+  ).run(req.params.id, nombre, fecha, JSON.stringify(datos));
   res.json({ id: r.lastInsertRowid });
 });
 
@@ -123,10 +125,11 @@ app.get('/api/rutinas/:id', (req, res) => {
 });
 
 app.put('/api/rutinas/:id', (req, res) => {
-  const { nombre, fecha, sesiones } = req.body;
+  const { nombre, fecha } = req.body;
+  const datos = req.body.sesiones || req.body['días'] || req.body.dias || [];
   db.prepare(
     'UPDATE rutinas SET nombre=?, fecha=?, sesiones=? WHERE id=?'
-  ).run(nombre, fecha, JSON.stringify(sesiones), req.params.id);
+  ).run(nombre, fecha, JSON.stringify(datos), req.params.id);
   res.json({ ok: true });
 });
 
