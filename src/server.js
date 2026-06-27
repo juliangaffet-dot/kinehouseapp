@@ -7,10 +7,12 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// DB
-const dbPath = process.env.DB_PATH || path.join(__dirname, '../data/kine.db');
-const dataDir = path.dirname(dbPath);
-if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+// DB — se guarda en /data (Volume persistente de Railway)
+// Si /data no existe (entorno local), cae a src/../data/
+const DATA_DIR = fs.existsSync('/data') ? '/data' : path.join(__dirname, '../data');
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+const dbPath = path.join(DATA_DIR, 'kine.db');
+console.log(`📦 Base de datos en: ${dbPath}`);
 
 const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');
@@ -156,7 +158,6 @@ app.delete('/api/cargas/:id', (req, res) => {
   res.json({ ok: true });
 });
 
-// Todos los ejercicios con cargas de un paciente (para el selector de evolución)
 app.get('/api/pacientes/:id/ejercicios-con-cargas', (req, res) => {
   const rows = db.prepare(
     'SELECT DISTINCT ejercicio FROM cargas WHERE paciente_id = ? ORDER BY ejercicio'
