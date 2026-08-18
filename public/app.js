@@ -1229,3 +1229,89 @@ cargarPacientes();
 document.addEventListener('keydown', e => {
   if (e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
 });
+
+// ════════════════════════════════════════════════════════════════════════════
+// ASISTENTE DE IA PARA ARMAR RUTINAS
+// ════════════════════════════════════════════════════════════════════════════
+function abrirModalIA() {
+  document.getElementById('ia-comando').value = '';
+  abrirModal('modal-ia');
+}
+
+async function generarRutinaIA() {
+  const comando = document.getElementById('ia-comando').value.trim();
+  if (!comando) { toast('Escribí qué rutina necesitás'); return; }
+
+  const btn = document.getElementById('ia-btn-generar');
+  const textoOriginal = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ Generando...';
+
+  try {
+    const body = { comando };
+    if (pacienteActual) {
+      body.paciente = {
+        nombre: pacienteActual.nombre,
+        edad: pacienteActual.edad,
+        objetivo: pacienteActual.objetivo,
+        lesiones: pacienteActual.lesiones
+      };
+    }
+
+    const res = await fetch('/api/generar-rutina', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+
+    if (!data.ok) { toast(data.error || 'No se pudo generar'); btn.disabled = false; btn.textContent = textoOriginal; return; }
+
+    aplicarRutinaIA(data.rutina);
+    cerrarModal('modal-ia');
+    toast('✅ Rutina generada — revisala y ajustá lo que quieras');
+  } catch (e) {
+    toast('Error de conexión, probá de nuevo');
+  }
+  btn.disabled = false;
+  btn.textContent = textoOriginal;
+}
+
+// Convierte la respuesta de la IA en filas de sesState y las carga en el armador
+function aplicarRutinaIA(rutina) {
+  if (!rutina || !Array.isArray(rutina.dias)) { toast('Formato inesperado'); return; }
+
+  // Nombre de la rutina
+  if (rutina.nombre) document.getElementById('rut-nombre').value = rutina.nombre;
+  // Fecha de hoy si está vacía
+  const fechaInp = document.getElementById('rut-fecha');
+  if (fechaInp && !fechaInp.value) fechaInp.value = new Date().toISOString().substring(0,10);
+
+  // Reset de los 3 días
+  sesState[1] = []; sesState[2] = []; sesState[3] = [];
+
+  rutina.dias.forEach((filasDia, idx) => {
+    const s = idx + 1;
+    if (s > 3) return;
+    sesState[s] = (filasDia || []).map(f => ({
+      blq: f.blq || '',
+      cat: f.cat || '',
+      ej:  f.ej || '',
+      ser: f.ser != null ? String(f.ser) : '',
+      r1:  f.r1 != null ? String(f.r1) : '',
+      r2:  f.r2 != null ? String(f.r2) : '',
+      r3:  f.r3 != null ? String(f.r3) : '',
+      r4:  f.r4 != null ? String(f.r4) : '',
+      kg1:'', kg2:'', kg3:'', kg4:'',
+      obs: f.obs || (f.nuevo ? '⚠ ejercicio nuevo (fuera del banco)' : '')
+    }));
+  });
+
+  // Rellenar días vacíos con filas por defecto para que la tabla se vea bien
+  [1,2,3].forEach(s => { if (!sesState[s].length) sesState[s] = defaultFilas(); });
+
+  // Mostrar día 1
+  currentSes = 1;
+  document.querySelectorAll('.stab').forEach((b,i) => b.classList.toggle('active', i===0));
+  renderSesion();
+}
