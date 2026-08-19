@@ -50,6 +50,13 @@ db.exec(`
     notas TEXT,
     FOREIGN KEY(paciente_id) REFERENCES pacientes(id)
   );
+
+  CREATE TABLE IF NOT EXISTS reglas_ia (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    paciente_id INTEGER,          -- NULL = regla general para todas las rutinas
+    texto TEXT NOT NULL,
+    creado_en TEXT DEFAULT (datetime('now','localtime'))
+  );
 `);
 
 app.use(express.json());
@@ -217,6 +224,39 @@ function llamarClaude(systemPrompt, userPrompt) {
   });
 }
 
+// ── REGLAS / MEMORIA DE INDICACIONES ───────────────────────────────────────────
+// Listar reglas: generales (paciente_id NULL) + las del paciente si se pasa ?paciente_id=
+app.get('/api/reglas', (req, res) => {
+  const pid = req.query.paciente_id;
+  let generales = db.prepare('SELECT * FROM reglas_ia WHERE paciente_id IS NULL ORDER BY id DESC').all();
+  let delPaciente = [];
+  if (pid) delPaciente = db.prepare('SELECT * FROM reglas_ia WHERE paciente_id = ? ORDER BY id DESC').all(pid);
+  res.json({ generales, paciente: delPaciente });
+});
+
+// Crear una regla (general si no se manda paciente_id)
+app.post('/api/reglas', (req, res) => {
+  const { texto, paciente_id } = req.body;
+  if (!texto || !texto.trim()) return res.status(400).json({ error: 'Texto vacío' });
+  const r = db.prepare('INSERT INTO reglas_ia (paciente_id, texto) VALUES (?,?)')
+    .run(paciente_id || null, texto.trim());
+  res.json({ ok: true, id: r.lastInsertRowid });
+});
+
+// Editar una regla
+app.put('/api/reglas/:id', (req, res) => {
+  const { texto } = req.body;
+  if (!texto || !texto.trim()) return res.status(400).json({ error: 'Texto vacío' });
+  db.prepare('UPDATE reglas_ia SET texto = ? WHERE id = ?').run(texto.trim(), req.params.id);
+  res.json({ ok: true });
+});
+
+// Borrar una regla
+app.delete('/api/reglas/:id', (req, res) => {
+  db.prepare('DELETE FROM reglas_ia WHERE id = ?').run(req.params.id);
+  res.json({ ok: true });
+});
+
 // ── ENDPOINT: GENERAR RUTINA CON IA ────────────────────────────────────────────
 app.post('/api/generar-rutina', async (req, res) => {
   try {
@@ -252,7 +292,22 @@ El array "dias" tiene 1, 2 o 3 elementos (uno por día). Cada día es un array d
 BANCO DE EJERCICIOS:
 ${catálogo}`;
 
+    // Cargar reglas guardadas (generales + del paciente)
+    const reglasGenerales = db.prepare('SELECT texto FROM reglas_ia WHERE paciente_id IS NULL ORDER BY id ASC').all();
+    let reglasPaciente = [];
+    if (paciente && paciente.id) {
+      reglasPaciente = db.prepare('SELECT texto FROM reglas_ia WHERE paciente_id = ? ORDER BY id ASC').all(paciente.id);
+    }
+
     let userMsg = `Indicación: ${comando}`;
+    if (reglasGenerales.length) {
+      userMsg += `\n\nREGLAS GENERALES que SIEMPRE debés respetar (indicaciones previas del kinesiólogo):\n` +
+        reglasGenerales.map(r => `- ${r.texto}`).join('\n');
+    }
+    if (reglasPaciente.length) {
+      userMsg += `\n\nREGLAS ESPECÍFICAS de este paciente que SIEMPRE debés respetar:\n` +
+        reglasPaciente.map(r => `- ${r.texto}`).join('\n');
+    }
     if (paciente) {
       userMsg += `\n\nDatos del paciente:`;
       if (paciente.nombre) userMsg += `\n- Nombre: ${paciente.nombre}`;
