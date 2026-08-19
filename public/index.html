@@ -268,15 +268,37 @@ table.rutina-table td input:focus,table.rutina-table td select:focus{outline:non
 </div>
 
 <div class="modal-overlay" id="modal-ia">
-  <div class="modal">
+  <div class="modal" style="max-width:560px">
     <h3>✨ Armar rutina con IA</h3>
-    <p style="color:var(--muted);font-size:13px;margin:6px 0 14px">Describí qué rutina querés y la IA la arma con ejercicios del banco. Después la podés revisar y ajustar antes de guardar.</p>
+    <p style="color:var(--muted);font-size:13px;margin:6px 0 14px">Describí qué rutina querés y la IA la arma con ejercicios del banco, respetando las indicaciones guardadas. Después la podés revisar y ajustar.</p>
     <div class="form-group">
       <label>¿Qué rutina necesitás?</label>
-      <textarea id="ia-comando" rows="4" placeholder="Ej: Rutina 3 días para posquirúrgico de LCA fase 2, énfasis en cuádriceps e isquios, sin pliometría todavía. Series y reps para rehabilitación."></textarea>
+      <textarea id="ia-comando" rows="3" placeholder="Ej: Rutina 3 días para posquirúrgico de LCA fase 2, énfasis en cuádriceps e isquios, sin pliometría todavía."></textarea>
     </div>
+
+    <div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;background:#faf8f2">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <strong style="font-size:13px">📌 Indicaciones guardadas</strong>
+        <button class="btn btn-sm" onclick="toggleReglas()" id="btn-toggle-reglas" style="font-size:11px">Ver / editar</button>
+      </div>
+      <div id="reglas-box" style="display:none">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Reglas generales (todas las rutinas):</div>
+        <div id="reglas-generales" style="margin-bottom:10px"></div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px" id="reglas-pac-label">Reglas de este paciente:</div>
+        <div id="reglas-paciente" style="margin-bottom:10px"></div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <input id="nueva-regla" placeholder="Escribí una nueva indicación..." style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px"/>
+          <select id="nueva-regla-tipo" style="padding:7px;border:1px solid var(--border);border-radius:6px;font-size:12px">
+            <option value="general">General</option>
+            <option value="paciente">Este paciente</option>
+          </select>
+          <button class="btn btn-sm btn-primary" onclick="agregarRegla()" style="font-size:11px">Agregar</button>
+        </div>
+      </div>
+    </div>
+
     <div style="background:#f6f2e8;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--muted);margin-bottom:8px">
-      💡 Podés indicar: cantidad de días, objetivo (fuerza, rehab, hipertrofia), zona del cuerpo, fase de recuperación, ejercicios a evitar, etc.
+      💡 Si la IA se equivoca en algo, corregilo con una indicación guardada para que no lo repita.
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="cerrarModal('modal-ia')">Cancelar</button>
