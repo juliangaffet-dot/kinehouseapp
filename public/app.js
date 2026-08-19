@@ -1235,7 +1235,78 @@ document.addEventListener('keydown', e => {
 // ════════════════════════════════════════════════════════════════════════════
 function abrirModalIA() {
   document.getElementById('ia-comando').value = '';
+  document.getElementById('reglas-box').style.display = 'none';
+  // mostrar/ocultar la sección "reglas de este paciente" según haya paciente
+  const labelPac = document.getElementById('reglas-pac-label');
+  const boxPac = document.getElementById('reglas-paciente');
+  const optPac = document.querySelector('#nueva-regla-tipo option[value="paciente"]');
+  if (pacienteActual) {
+    if (labelPac) labelPac.style.display = '';
+    if (boxPac) boxPac.style.display = '';
+    if (optPac) optPac.style.display = '';
+  } else {
+    if (labelPac) labelPac.style.display = 'none';
+    if (boxPac) boxPac.style.display = 'none';
+    if (optPac) optPac.style.display = 'none';
+    document.getElementById('nueva-regla-tipo').value = 'general';
+  }
+  cargarReglas();
   abrirModal('modal-ia');
+}
+
+function toggleReglas() {
+  const box = document.getElementById('reglas-box');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+async function cargarReglas() {
+  try {
+    let url = '/api/reglas';
+    if (pacienteActual) url += '?paciente_id=' + pacienteActual.id;
+    const res = await fetch(url);
+    const data = await res.json();
+    renderReglas('reglas-generales', data.generales || []);
+    renderReglas('reglas-paciente', data.paciente || []);
+  } catch(e) {}
+}
+
+function renderReglas(contId, reglas) {
+  const cont = document.getElementById(contId);
+  if (!cont) return;
+  if (!reglas.length) {
+    cont.innerHTML = '<div style="font-size:12px;color:#b5ad9e;font-style:italic">Sin indicaciones aún</div>';
+    return;
+  }
+  cont.innerHTML = reglas.map(r => `
+    <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;background:#fff;border:1px solid var(--border);border-radius:6px;margin-bottom:4px">
+      <span style="flex:1;font-size:12px">${escapeHtml(r.texto)}</span>
+      <button onclick="borrarRegla(${r.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:13px" title="Borrar">✕</button>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function agregarRegla() {
+  const inp = document.getElementById('nueva-regla');
+  const texto = inp.value.trim();
+  if (!texto) { toast('Escribí la indicación'); return; }
+  const tipo = document.getElementById('nueva-regla-tipo').value;
+  const body = { texto };
+  if (tipo === 'paciente' && pacienteActual) body.paciente_id = pacienteActual.id;
+  try {
+    await fetch('/api/reglas', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    inp.value = '';
+    cargarReglas();
+    toast('✅ Indicación guardada');
+  } catch(e) { toast('Error al guardar'); }
+}
+
+async function borrarRegla(id) {
+  try {
+    await fetch('/api/reglas/' + id, { method:'DELETE' });
+    cargarReglas();
+  } catch(e) {}
 }
 
 async function generarRutinaIA() {
@@ -1251,6 +1322,7 @@ async function generarRutinaIA() {
     const body = { comando };
     if (pacienteActual) {
       body.paciente = {
+        id: pacienteActual.id,
         nombre: pacienteActual.nombre,
         edad: pacienteActual.edad,
         objetivo: pacienteActual.objetivo,
