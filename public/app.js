@@ -1251,6 +1251,7 @@ function abrirModalIA() {
     document.getElementById('nueva-regla-tipo').value = 'general';
   }
   cargarReglas();
+  cargarHistorial();
   abrirModal('modal-ia');
 }
 
@@ -1309,17 +1310,55 @@ async function borrarRegla(id) {
   } catch(e) {}
 }
 
-async function generarRutinaIA() {
-  const comando = document.getElementById('ia-comando').value.trim();
-  if (!comando) { toast('Escribí qué rutina necesitás'); return; }
+// Captura la rutina que está en pantalla (los 3 días) para mandarla como base a corregir.
+// Devuelve un array de días; cada día es un array de filas con contenido real.
+function rutinaActualParaIA() {
+  guardarSesActual();
+  const dias = [];
+  [1,2,3].forEach(s => {
+    const filas = (sesState[s] || [])
+      .filter(r => (r.cat && r.cat.trim()) || (r.ej && r.ej.trim()))
+      .map(r => ({
+        blq: r.blq || '', cat: r.cat || '', ej: r.ej || '',
+        ser: r.ser || '', r1: r.r1 || '', r2: r.r2 || '', r3: r.r3 || '', r4: r.r4 || '',
+        obs: r.obs || ''
+      }));
+    dias.push(filas);
+  });
+  return dias;
+}
 
-  const btn = document.getElementById('ia-btn-generar');
+// ¿Hay realmente una rutina cargada en pantalla?
+function hayRutinaEnPantalla() {
+  return rutinaActualParaIA().some(d => d.length > 0);
+}
+
+function generarRutinaIA() { return _ejecutarIA('nueva'); }
+function corregirRutinaIA() { return _ejecutarIA('corregir'); }
+
+async function _ejecutarIA(modo) {
+  const comando = document.getElementById('ia-comando').value.trim();
+  if (!comando) {
+    toast(modo === 'corregir' ? 'Escribí qué querés cambiar' : 'Escribí qué rutina necesitás');
+    return;
+  }
+
+  const esCorreccion = modo === 'corregir';
+  if (esCorreccion && !hayRutinaEnPantalla()) {
+    toast('No hay una rutina cargada para corregir. Generá una primero.');
+    return;
+  }
+
+  const btnGen = document.getElementById('ia-btn-generar');
+  const btnCor = document.getElementById('ia-btn-corregir');
+  const btn = esCorreccion ? btnCor : btnGen;
   const textoOriginal = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = '⏳ Generando...';
+  btnGen.disabled = true; btnCor.disabled = true;
+  btn.textContent = esCorreccion ? '⏳ Corrigiendo...' : '⏳ Generando...';
 
   try {
-    const body = { comando };
+    const body = { comando, modo };
+    if (esCorreccion) body.rutinaActual = rutinaActualParaIA();
     if (pacienteActual) {
       body.paciente = {
         id: pacienteActual.id,
@@ -1337,16 +1376,64 @@ async function generarRutinaIA() {
     });
     const data = await res.json();
 
-    if (!data.ok) { toast(data.error || 'No se pudo generar'); btn.disabled = false; btn.textContent = textoOriginal; return; }
-
-    aplicarRutinaIA(data.rutina);
-    cerrarModal('modal-ia');
-    toast('✅ Rutina generada — revisala y ajustá lo que quieras');
+    if (!data.ok) { toast(data.error || 'No se pudo generar'); }
+    else {
+      aplicarRutinaIA(data.rutina);
+      cerrarModal('modal-ia');
+      toast(esCorreccion ? '✅ Rutina corregida — revisá los cambios' : '✅ Rutina generada — revisala y ajustá lo que quieras');
+    }
   } catch (e) {
     toast('Error de conexión, probá de nuevo');
   }
-  btn.disabled = false;
+  btnGen.disabled = false; btnCor.disabled = false;
   btn.textContent = textoOriginal;
+}
+
+// ── HISTORIAL DE COMANDOS DEL PACIENTE ─────────────────────────────────────────
+async function cargarHistorial() {
+  const box = document.getElementById('ia-hist-box');
+  if (!pacienteActual) { if (box) box.style.display = 'none'; return; }
+  try {
+    const res = await fetch('/api/historial?paciente_id=' + pacienteActual.id);
+    const rows = await res.json();
+    renderHistorial(rows || []);
+  } catch(e) {
+    if (box) box.style.display = 'none';
+  }
+}
+
+function renderHistorial(rows) {
+  const box = document.getElementById('ia-hist-box');
+  const cont = document.getElementById('ia-historial');
+  if (!box || !cont) return;
+  if (!rows.length) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  cont.innerHTML = rows.map(h => {
+    const etiqueta = h.modo === 'corregir' ? '✏️' : '✨';
+    const cmd = escapeHtml(h.comando);
+    return `
+    <div style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:#fff;border:1px solid var(--border);border-radius:6px;margin-bottom:4px">
+      <span style="font-size:12px" title="${h.modo === 'corregir' ? 'Corrección' : 'Rutina nueva'}">${etiqueta}</span>
+      <button onclick="usarComando(this)" data-cmd="${cmd}" style="flex:1;text-align:left;background:none;border:none;cursor:pointer;font-size:12px;color:var(--text);padding:0" title="Usar de nuevo">${cmd}</button>
+      <button onclick="borrarComando(${h.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:13px" title="Borrar del historial">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function usarComando(btnEl) {
+  const cmd = btnEl.getAttribute('data-cmd') || '';
+  const ta = document.getElementById('ia-comando');
+  const tmp = document.createElement('textarea');
+  tmp.innerHTML = cmd;
+  ta.value = tmp.value;
+  ta.focus();
+}
+
+async function borrarComando(id) {
+  try {
+    await fetch('/api/historial/' + id, { method: 'DELETE' });
+    cargarHistorial();
+  } catch(e) {}
 }
 
 // Convierte la respuesta de la IA en filas de sesState y las carga en el armador
