@@ -69,7 +69,13 @@ db.exec(`
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '../public')));
+// Servir estáticos con revalidación obligatoria: el navegador puede cachear,
+// pero SIEMPRE chequea con el server si cambió antes de usar la copia (evita servir JS/HTML viejo).
+app.use(express.static(path.join(__dirname, '../public'), {
+  etag: true,
+  lastModified: true,
+  setHeaders: (res) => { res.setHeader('Cache-Control', 'no-cache'); }
+}));
 
 // Migración defensiva: columna para guardar la conversación del asistente por rutina
 try { db.exec('ALTER TABLE rutinas ADD COLUMN chat TEXT'); } catch(e) { /* ya existe */ }
