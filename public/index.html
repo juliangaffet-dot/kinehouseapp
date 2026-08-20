@@ -268,20 +268,18 @@ table.rutina-table td input:focus,table.rutina-table td select:focus{outline:non
 </div>
 
 <div class="modal-overlay" id="modal-ia">
-  <div class="modal" style="max-width:560px">
-    <h3>✨ Armar rutina con IA</h3>
-    <p style="color:var(--muted);font-size:13px;margin:6px 0 14px">Describí qué rutina querés y la IA la arma con ejercicios del banco. Si ya hay una rutina en pantalla y solo querés ajustar algo, escribí el cambio y tocá <strong>Corregir la rutina actual</strong>.</p>
-    <div class="form-group">
-      <label>¿Qué rutina necesitás? / ¿Qué querés cambiar?</label>
-      <textarea id="ia-comando" rows="3" placeholder="Nueva: Rutina 3 días para posquirúrgico de LCA fase 2, énfasis en cuádriceps.&#10;Corrección: cambiá el ejercicio del bloque B2 y bajá las reps del día 2."></textarea>
+  <div class="modal" style="max-width:600px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+      <h3 style="margin:0">✨ Asistente de rutina</h3>
+      <button class="btn btn-sm" onclick="nuevaConversacionIA()" title="Empezar la conversación de cero (no borra la rutina)" style="font-size:11px">🔄 Nueva conversación</button>
     </div>
+    <p style="color:var(--muted);font-size:13px;margin:6px 0 10px">Charlá con el asistente como por chat. Recuerda todo lo hablado en esta rutina: pedile que la arme y después decile qué cambiar. La conversación se guarda junto con la rutina.</p>
 
-    <div id="ia-hist-box" style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;background:#f4f7f4;display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <strong style="font-size:13px">🕘 Consignas anteriores de este paciente</strong>
-      </div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Tocá una para volver a usarla (se copia arriba y la podés editar).</div>
-      <div id="ia-historial"></div>
+    <div id="ia-chat-msgs" style="border:1px solid var(--border);border-radius:10px;padding:12px;background:#faf9f5;min-height:180px;max-height:42vh;overflow-y:auto;margin-bottom:8px;display:flex;flex-direction:column;gap:8px"></div>
+
+    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:12px">
+      <textarea id="ia-input" rows="2" placeholder="Escribí acá... (ej: armá una rutina de 3 días para vuelta a correr; o: cambiá el B2 por otro ejercicio)" style="flex:1;resize:none" onkeydown="iaInputKeydown(event)"></textarea>
+      <button class="btn btn-primary" id="ia-btn-enviar" onclick="enviarMensajeIA()" style="white-space:nowrap">Enviar ▸</button>
     </div>
 
     <div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;background:#faf8f2">
@@ -306,12 +304,10 @@ table.rutina-table td input:focus,table.rutina-table td select:focus{outline:non
     </div>
 
     <div style="background:#f6f2e8;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--muted);margin-bottom:8px">
-      💡 Si la IA se equivoca en algo, corregilo con una indicación guardada para que no lo repita.
+      💡 Lo que quieras que respete siempre (en todas las rutinas), guardalo como indicación. Los cambios puntuales de esta rutina, pedíselos por el chat.
     </div>
     <div class="modal-footer">
-      <button class="btn" onclick="cerrarModal('modal-ia')">Cancelar</button>
-      <button class="btn" id="ia-btn-corregir" onclick="corregirRutinaIA()" title="Aplica el cambio sobre la rutina que ya está en pantalla, sin rehacerla de cero">✏️ Corregir la rutina actual</button>
-      <button class="btn btn-primary" id="ia-btn-generar" onclick="generarRutinaIA()">Generar rutina nueva</button>
+      <button class="btn btn-primary" onclick="cerrarModal('modal-ia')">Cerrar</button>
     </div>
   </div>
 </div>
