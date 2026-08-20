@@ -57,6 +57,14 @@ db.exec(`
     texto TEXT NOT NULL,
     creado_en TEXT DEFAULT (datetime('now','localtime'))
   );
+
+  CREATE TABLE IF NOT EXISTS historial_comandos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    paciente_id INTEGER NOT NULL,
+    comando TEXT NOT NULL,
+    modo TEXT DEFAULT 'nueva',     -- 'nueva' = generó de cero, 'corregir' = ajuste sobre la rutina
+    creado_en TEXT DEFAULT (datetime('now','localtime'))
+  );
 `);
 
 app.use(express.json());
@@ -257,14 +265,32 @@ app.delete('/api/reglas/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// ── HISTORIAL DE COMANDOS POR PACIENTE ─────────────────────────────────────────
+// Listar los comandos que se le dieron a la IA para este paciente (más nuevo primero)
+app.get('/api/historial', (req, res) => {
+  const pid = req.query.paciente_id;
+  if (!pid) return res.json([]);
+  const rows = db.prepare(
+    'SELECT id, comando, modo, creado_en FROM historial_comandos WHERE paciente_id = ? ORDER BY id DESC LIMIT 50'
+  ).all(pid);
+  res.json(rows);
+});
+
+// Borrar un comando del historial
+app.delete('/api/historial/:id', (req, res) => {
+  db.prepare('DELETE FROM historial_comandos WHERE id = ?').run(req.params.id);
+  res.json({ ok: true });
+});
+
 // ── ENDPOINT: GENERAR RUTINA CON IA ────────────────────────────────────────────
 app.post('/api/generar-rutina', async (req, res) => {
   try {
     if (!process.env.ANTHROPIC_API_KEY) {
       return res.status(500).json({ error: 'Falta configurar ANTHROPIC_API_KEY en el servidor.' });
     }
-    const { comando, paciente } = req.body;
+    const { comando, paciente, modo, rutinaActual } = req.body;
     if (!comando || !comando.trim()) return res.status(400).json({ error: 'Escribí una indicación para la rutina.' });
+    const esCorreccion = modo === 'corregir';
 
     // Lista de categorías y ejercicios del banco (para que la IA elija de ahí)
     const catálogo = Object.entries(BANCO_CATS)
@@ -299,7 +325,29 @@ ${catálogo}`;
       reglasPaciente = db.prepare('SELECT texto FROM reglas_ia WHERE paciente_id = ? ORDER BY id ASC').all(paciente.id);
     }
 
-    let userMsg = `Indicación: ${comando}`;
+    // Historial de comandos previos de este paciente (para dar continuidad)
+    let historialPrevios = [];
+    if (paciente && paciente.id) {
+      historialPrevios = db.prepare(
+        'SELECT comando, modo FROM historial_comandos WHERE paciente_id = ? ORDER BY id DESC LIMIT 8'
+      ).all(paciente.id).reverse(); // del más viejo al más nuevo
+    }
+
+    let userMsg;
+    if (esCorreccion) {
+      userMsg = `Esto es una CORRECCIÓN sobre una rutina que YA existe. NO armes una rutina nueva de cero.\n` +
+        `Aplicá ÚNICAMENTE el cambio que se pide abajo y devolvé la rutina COMPLETA con ese cambio aplicado.\n` +
+        `Todo lo que el pedido NO menciona debe quedar EXACTAMENTE IGUAL: mismos ejercicios, mismos bloques, mismas series y repeticiones.\n\n` +
+        `CAMBIO PEDIDO: ${comando}`;
+      // La rutina actual que está en pantalla
+      if (rutinaActual && Array.isArray(rutinaActual) && rutinaActual.length) {
+        userMsg += `\n\nRUTINA ACTUAL (la que tenés que corregir), en formato JSON, un array por día:\n` +
+          JSON.stringify(rutinaActual);
+      }
+    } else {
+      userMsg = `Indicación: ${comando}`;
+    }
+
     if (reglasGenerales.length) {
       userMsg += `\n\nREGLAS GENERALES que SIEMPRE debés respetar (indicaciones previas del kinesiólogo):\n` +
         reglasGenerales.map(r => `- ${r.texto}`).join('\n');
@@ -307,6 +355,10 @@ ${catálogo}`;
     if (reglasPaciente.length) {
       userMsg += `\n\nREGLAS ESPECÍFICAS de este paciente que SIEMPRE debés respetar:\n` +
         reglasPaciente.map(r => `- ${r.texto}`).join('\n');
+    }
+    if (historialPrevios.length) {
+      userMsg += `\n\nPEDIDOS ANTERIORES para este paciente (en orden, para que mantengas coherencia con lo que ya se fue armando):\n` +
+        historialPrevios.map(h => `- ${h.comando}`).join('\n');
     }
     if (paciente) {
       userMsg += `\n\nDatos del paciente:`;
@@ -328,6 +380,14 @@ ${catálogo}`;
     let rutina;
     try { rutina = JSON.parse(jsonStr); }
     catch(e) { return res.status(500).json({ error: 'La IA devolvió un formato inesperado. Probá reformular la indicación.' }); }
+
+    // Guardar el comando en el historial del paciente (para reutilizarlo y dar continuidad)
+    if (paciente && paciente.id) {
+      try {
+        db.prepare('INSERT INTO historial_comandos (paciente_id, comando, modo) VALUES (?,?,?)')
+          .run(paciente.id, comando.trim(), esCorreccion ? 'corregir' : 'nueva');
+      } catch(e) { /* no bloquear la respuesta por esto */ }
+    }
 
     res.json({ ok: true, rutina });
   } catch (err) {
