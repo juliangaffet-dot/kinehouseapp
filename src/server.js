@@ -71,6 +71,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../public')));
 
+// Migración defensiva: columna para guardar la conversación del asistente por rutina
+try { db.exec('ALTER TABLE rutinas ADD COLUMN chat TEXT'); } catch(e) { /* ya existe */ }
+
 // ── PACIENTES ─────────────────────────────────────────────────────────────────
 app.get('/api/pacientes', (req, res) => {
   const rows = db.prepare(`
@@ -127,9 +130,10 @@ app.post('/api/pacientes/:id/rutinas', (req, res) => {
   const { nombre, fecha } = req.body;
   // El app.js guarda como "días" (con tilde), el server como "sesiones"
   const datos = req.body.sesiones || req.body['días'] || req.body.dias || [];
+  const chat = req.body.chat ? JSON.stringify(req.body.chat) : null;
   const r = db.prepare(
-    'INSERT INTO rutinas (paciente_id, nombre, fecha, sesiones) VALUES (?,?,?,?)'
-  ).run(req.params.id, nombre, fecha, JSON.stringify(datos));
+    'INSERT INTO rutinas (paciente_id, nombre, fecha, sesiones, chat) VALUES (?,?,?,?,?)'
+  ).run(req.params.id, nombre, fecha, JSON.stringify(datos), chat);
   res.json({ id: r.lastInsertRowid });
 });
 
@@ -137,15 +141,20 @@ app.get('/api/rutinas/:id', (req, res) => {
   const r = db.prepare('SELECT * FROM rutinas WHERE id = ?').get(req.params.id);
   if (!r) return res.status(404).json({ error: 'No encontrada' });
   r.sesiones = JSON.parse(r.sesiones);
+  try { r.chat = r.chat ? JSON.parse(r.chat) : []; } catch(e) { r.chat = []; }
   res.json(r);
 });
 
 app.put('/api/rutinas/:id', (req, res) => {
   const { nombre, fecha } = req.body;
   const datos = req.body.sesiones || req.body['días'] || req.body.dias || [];
-  db.prepare(
-    'UPDATE rutinas SET nombre=?, fecha=?, sesiones=? WHERE id=?'
-  ).run(nombre, fecha, JSON.stringify(datos), req.params.id);
+  if (req.body.chat !== undefined) {
+    db.prepare('UPDATE rutinas SET nombre=?, fecha=?, sesiones=?, chat=? WHERE id=?')
+      .run(nombre, fecha, JSON.stringify(datos), JSON.stringify(req.body.chat), req.params.id);
+  } else {
+    db.prepare('UPDATE rutinas SET nombre=?, fecha=?, sesiones=? WHERE id=?')
+      .run(nombre, fecha, JSON.stringify(datos), req.params.id);
+  }
   res.json({ ok: true });
 });
 
@@ -196,12 +205,17 @@ try {
 
 // Llamada a la API de Anthropic vía https nativo
 function llamarClaude(systemPrompt, userPrompt) {
+  return llamarClaudeMsgs(systemPrompt, [{ role: 'user', content: userPrompt }]);
+}
+
+// Igual que llamarClaude pero recibe un hilo de mensajes (para el chat con memoria)
+function llamarClaudeMsgs(systemPrompt, messages) {
   return new Promise((resolve, reject) => {
     const payload = JSON.stringify({
       model: 'claude-sonnet-4-5-20250929',
       max_tokens: 4000,
       system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }]
+      messages: messages
     });
     const options = {
       hostname: 'api.anthropic.com',
@@ -282,28 +296,59 @@ app.delete('/api/historial/:id', (req, res) => {
   res.json({ ok: true });
 });
 
-// ── ENDPOINT: GENERAR RUTINA CON IA ────────────────────────────────────────────
+// ── ENDPOINT: ASISTENTE DE RUTINAS (CHAT CON MEMORIA POR RUTINA) ───────────────
 app.post('/api/generar-rutina', async (req, res) => {
   try {
     if (!process.env.ANTHROPIC_API_KEY) {
       return res.status(500).json({ error: 'Falta configurar ANTHROPIC_API_KEY en el servidor.' });
     }
-    const { comando, paciente, modo, rutinaActual } = req.body;
-    if (!comando || !comando.trim()) return res.status(400).json({ error: 'Escribí una indicación para la rutina.' });
-    const esCorreccion = modo === 'corregir';
+    const { mensajes, paciente, rutinaActual } = req.body;
+    if (!Array.isArray(mensajes) || !mensajes.length) {
+      return res.status(400).json({ error: 'Escribí un mensaje para el asistente.' });
+    }
+    // El último mensaje debe ser del usuario
+    const ultimo = mensajes[mensajes.length - 1];
+    if (!ultimo || ultimo.rol !== 'user' || !String(ultimo.texto || '').trim()) {
+      return res.status(400).json({ error: 'Escribí un mensaje para el asistente.' });
+    }
 
-    // Lista de categorías y ejercicios del banco (para que la IA elija de ahí)
+    // Catálogo del banco
     const catálogo = Object.entries(BANCO_CATS)
       .map(([cat, ejs]) => `### ${cat}\n` + ejs.map(e => `- ${typeof e === 'string' ? e : (e.nombre || e.ej || JSON.stringify(e))}`).join('\n'))
       .join('\n\n');
 
-    const system = `Sos un kinesiólogo experto que arma rutinas de rehabilitación y entrenamiento para el centro Kine House.
-Tenés un BANCO DE EJERCICIOS oficial. Debés armar rutinas usando PREFERENTEMENTE ejercicios de ese banco, respetando EXACTAMENTE el nombre de la categoría y del ejercicio tal como figuran.
+    // Reglas guardadas (generales + del paciente)
+    const reglasGenerales = db.prepare('SELECT texto FROM reglas_ia WHERE paciente_id IS NULL ORDER BY id ASC').all();
+    let reglasPaciente = [];
+    if (paciente && paciente.id) {
+      reglasPaciente = db.prepare('SELECT texto FROM reglas_ia WHERE paciente_id = ? ORDER BY id ASC').all(paciente.id);
+    }
 
-Si un ejercicio necesario no está en el banco, podés agregarlo igual, pero poné el campo "cat" como "Otros Auxiliares" y marcá "nuevo": true.
+    // Datos del paciente en texto
+    let datosPac = '';
+    if (paciente) {
+      const l = [];
+      if (paciente.nombre) l.push(`Nombre: ${paciente.nombre}`);
+      if (paciente.edad) l.push(`Edad: ${paciente.edad}`);
+      if (paciente.objetivo) l.push(`Objetivo: ${paciente.objetivo}`);
+      if (paciente.lesiones) l.push(`Lesiones: ${paciente.lesiones}`);
+      if (l.length) datosPac = `\n\nDATOS DEL PACIENTE:\n- ` + l.join('\n- ');
+    }
+
+    let bloqueReglas = '';
+    if (reglasGenerales.length) {
+      bloqueReglas += `\n\nREGLAS GENERALES que SIEMPRE debés respetar:\n` + reglasGenerales.map(r => `- ${r.texto}`).join('\n');
+    }
+    if (reglasPaciente.length) {
+      bloqueReglas += `\n\nREGLAS ESPECÍFICAS de este paciente que SIEMPRE debés respetar:\n` + reglasPaciente.map(r => `- ${r.texto}`).join('\n');
+    }
+
+    const system = `Sos el asistente de kinesiología de Kine House. Conversás con el kinesiólogo para armar y ajustar rutinas, con un tono claro y directo, en español rioplatense.
+
+Tenés un BANCO DE EJERCICIOS oficial. Armá rutinas usando PREFERENTEMENTE ejercicios de ese banco, respetando EXACTAMENTE el nombre de la categoría y del ejercicio tal como figuran. Si un ejercicio necesario no está en el banco, podés agregarlo igual, pero poné "cat" como "Otros Auxiliares" y marcá "nuevo": true.
 
 Estructura de la rutina: hasta 3 días. Cada día es una lista de filas. Cada fila tiene:
-- "blq": bloque (A1, A2, A3, B1, B2, C1, etc. — agrupá ejercicios que se hacen juntos con la misma letra)
+- "blq": bloque (A1, A2, A3, B1, B2, C1, etc. — agrupá con la misma letra los ejercicios que van juntos)
 - "cat": nombre EXACTO de la categoría del banco
 - "ej": nombre EXACTO del ejercicio
 - "ser": número de series (ej "3")
@@ -311,88 +356,67 @@ Estructura de la rutina: hasta 3 días. Cada día es una lista de filas. Cada fi
 - "obs": observación breve opcional
 Completá series y reps con valores TÍPICOS según el objetivo (fuerza: 3-5 series x 4-6 reps; hipertrofia: 3-4 x 8-12; resistencia/rehab: 2-3 x 12-20).
 
-Respondé ÚNICAMENTE con un JSON válido, sin texto adicional, sin markdown, con esta forma exacta:
-{"nombre":"Nombre corto de la rutina","dias":[[{"blq":"A1","cat":"...","ej":"...","ser":"3","r1":"12","r2":"10","r3":"8","r4":"","obs":"","nuevo":false}]]}
-El array "dias" tiene 1, 2 o 3 elementos (uno por día). Cada día es un array de filas.
+CÓMO FUNCIONA LA CONVERSACIÓN:
+- Tenés MEMORIA de todo este chat: recordá lo que ya se pidió y ajustá SOBRE la rutina existente en vez de rehacerla de cero, salvo que te pidan explícitamente empezar de nuevo.
+- En cada respuesta te paso, entre corchetes, el ESTADO ACTUAL de la rutina en pantalla. Ese es el punto de partida real (puede tener ediciones hechas a mano). Cuando cambies algo, cambiá SOLO lo pedido y mantené el resto EXACTAMENTE igual.
+- Si el mensaje del usuario no pide cambios a la rutina (por ejemplo una pregunta o un comentario), respondé con "dias": null.
+
+RESPONDÉ SIEMPRE con un ÚNICO JSON válido, sin markdown ni texto fuera del JSON, con esta forma EXACTA:
+{"respuesta":"lo que le decís al kinesiólogo, breve y claro","nombre":"Nombre corto de la rutina o null","dias":[[{"blq":"A1","cat":"...","ej":"...","ser":"3","r1":"12","r2":"10","r3":"8","r4":"","obs":"","nuevo":false}]]}
+- "respuesta": tu mensaje conversacional (obligatorio).
+- "nombre": nombre de la rutina si corresponde ponerlo/actualizarlo; si no, null.
+- "dias": la rutina COMPLETA y actualizada (array de 1 a 3 días). Si no hay cambios en la rutina, poné null.
+${bloqueReglas}${datosPac}
 
 BANCO DE EJERCICIOS:
 ${catálogo}`;
 
-    // Cargar reglas guardadas (generales + del paciente)
-    const reglasGenerales = db.prepare('SELECT texto FROM reglas_ia WHERE paciente_id IS NULL ORDER BY id ASC').all();
-    let reglasPaciente = [];
-    if (paciente && paciente.id) {
-      reglasPaciente = db.prepare('SELECT texto FROM reglas_ia WHERE paciente_id = ? ORDER BY id ASC').all(paciente.id);
+    // Construir el hilo de mensajes para la API (roles reales del chat)
+    const apiMessages = mensajes
+      .filter(m => m && (m.rol === 'user' || m.rol === 'assistant') && String(m.texto || '').trim())
+      .map(m => ({ role: m.rol, content: String(m.texto) }));
+
+    // Inyectar el estado actual de la rutina al final del último mensaje del usuario
+    if (apiMessages.length) {
+      const estado = (rutinaActual && Array.isArray(rutinaActual) && rutinaActual.some(d => d && d.length))
+        ? JSON.stringify(rutinaActual)
+        : '(vacía, todavía no hay ejercicios cargados)';
+      const idx = apiMessages.length - 1;
+      apiMessages[idx] = {
+        role: apiMessages[idx].role,
+        content: apiMessages[idx].content + `\n\n[ESTADO ACTUAL DE LA RUTINA EN PANTALLA: ${estado}]`
+      };
     }
 
-    // Historial de comandos previos de este paciente (para dar continuidad)
-    let historialPrevios = [];
-    if (paciente && paciente.id) {
-      historialPrevios = db.prepare(
-        'SELECT comando, modo FROM historial_comandos WHERE paciente_id = ? ORDER BY id DESC LIMIT 8'
-      ).all(paciente.id).reverse(); // del más viejo al más nuevo
-    }
+    const texto = await llamarClaudeMsgs(system, apiMessages);
 
-    let userMsg;
-    if (esCorreccion) {
-      userMsg = `Esto es una CORRECCIÓN sobre una rutina que YA existe. NO armes una rutina nueva de cero.\n` +
-        `Aplicá ÚNICAMENTE el cambio que se pide abajo y devolvé la rutina COMPLETA con ese cambio aplicado.\n` +
-        `Todo lo que el pedido NO menciona debe quedar EXACTAMENTE IGUAL: mismos ejercicios, mismos bloques, mismas series y repeticiones.\n\n` +
-        `CAMBIO PEDIDO: ${comando}`;
-      // La rutina actual que está en pantalla
-      if (rutinaActual && Array.isArray(rutinaActual) && rutinaActual.length) {
-        userMsg += `\n\nRUTINA ACTUAL (la que tenés que corregir), en formato JSON, un array por día:\n` +
-          JSON.stringify(rutinaActual);
-      }
-    } else {
-      userMsg = `Indicación: ${comando}`;
-    }
-
-    if (reglasGenerales.length) {
-      userMsg += `\n\nREGLAS GENERALES que SIEMPRE debés respetar (indicaciones previas del kinesiólogo):\n` +
-        reglasGenerales.map(r => `- ${r.texto}`).join('\n');
-    }
-    if (reglasPaciente.length) {
-      userMsg += `\n\nREGLAS ESPECÍFICAS de este paciente que SIEMPRE debés respetar:\n` +
-        reglasPaciente.map(r => `- ${r.texto}`).join('\n');
-    }
-    if (historialPrevios.length) {
-      userMsg += `\n\nPEDIDOS ANTERIORES para este paciente (en orden, para que mantengas coherencia con lo que ya se fue armando):\n` +
-        historialPrevios.map(h => `- ${h.comando}`).join('\n');
-    }
-    if (paciente) {
-      userMsg += `\n\nDatos del paciente:`;
-      if (paciente.nombre) userMsg += `\n- Nombre: ${paciente.nombre}`;
-      if (paciente.edad) userMsg += `\n- Edad: ${paciente.edad}`;
-      if (paciente.objetivo) userMsg += `\n- Objetivo: ${paciente.objetivo}`;
-      if (paciente.lesiones) userMsg += `\n- Lesiones: ${paciente.lesiones}`;
-    }
-
-    const texto = await llamarClaude(system, userMsg);
     // Extraer el JSON de la respuesta
     let jsonStr = texto.trim();
     const fence = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (fence) jsonStr = fence[1].trim();
     const primero = jsonStr.indexOf('{');
-    const ultimo = jsonStr.lastIndexOf('}');
-    if (primero >= 0 && ultimo >= 0) jsonStr = jsonStr.slice(primero, ultimo + 1);
+    const ultimoLlave = jsonStr.lastIndexOf('}');
+    if (primero >= 0 && ultimoLlave >= 0) jsonStr = jsonStr.slice(primero, ultimoLlave + 1);
 
-    let rutina;
-    try { rutina = JSON.parse(jsonStr); }
-    catch(e) { return res.status(500).json({ error: 'La IA devolvió un formato inesperado. Probá reformular la indicación.' }); }
-
-    // Guardar el comando en el historial del paciente (para reutilizarlo y dar continuidad)
-    if (paciente && paciente.id) {
-      try {
-        db.prepare('INSERT INTO historial_comandos (paciente_id, comando, modo) VALUES (?,?,?)')
-          .run(paciente.id, comando.trim(), esCorreccion ? 'corregir' : 'nueva');
-      } catch(e) { /* no bloquear la respuesta por esto */ }
+    let parsed;
+    try { parsed = JSON.parse(jsonStr); }
+    catch(e) {
+      // Si no vino JSON, devolvemos el texto como respuesta conversacional sin tocar la rutina
+      return res.json({ ok: true, respuesta: texto.trim() || 'No pude armar la respuesta, probá de nuevo.', rutina: null });
     }
 
-    res.json({ ok: true, rutina });
+    const respuesta = parsed.respuesta || 'Listo.';
+    let rutina = null;
+    if (parsed.dias && Array.isArray(parsed.dias)) {
+      rutina = { nombre: parsed.nombre || null, dias: parsed.dias };
+    } else if (parsed.nombre) {
+      rutina = { nombre: parsed.nombre, dias: null };
+    }
+
+    res.json({ ok: true, respuesta, rutina });
   } catch (err) {
     console.error('Error generar-rutina:', err.message);
-    res.status(500).json({ error: 'No se pudo generar la rutina: ' + err.message });
+    res.status(500).json({ error: 'No se pudo procesar el mensaje: ' + err.message });
   }
 });
 
