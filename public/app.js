@@ -533,6 +533,7 @@ const GRUPOS = [
 // ── ESTADO ────────────────────────────────────────────────────────────────────
 let pacienteActual = null;
 let rutinaActual = null;
+let chatRutina = [];   // conversación del asistente para la rutina actual (memoria por rutina)
 let editandoPacId = null;
 let currentSes = 1;
 const sesState = {1:[], 2:[], 3:[]};
@@ -707,6 +708,7 @@ async function cargarRutinas() {
 
 function nuevaRutina() {
   rutinaActual = null;
+  chatRutina = [];
   sesState[1] = []; sesState[2] = []; sesState[3] = [];
   initSesiones();
   currentSes = 1;
@@ -722,6 +724,7 @@ async function abrirRutina(id) {
   const res = await fetch(`/api/rutinas/${id}`);
   const r = await res.json();
   rutinaActual = r;
+  chatRutina = Array.isArray(r.chat) ? r.chat : [];
   // sesiones puede ser array [d1,d2,d3] o objeto {1:d1, 2:d2, 3:d3}
   [1,2,3].forEach(s => {
     const datos = Array.isArray(r.sesiones) ? r.sesiones[s-1] : r.sesiones[s];
@@ -746,17 +749,17 @@ async function guardarRutina() {
   if (rutinaActual) {
     await fetch(`/api/rutinas/${rutinaActual.id}`, {
       method:'PUT', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ nombre, fecha, dias })
+      body: JSON.stringify({ nombre, fecha, dias, chat: chatRutina })
     });
-    rutinaActual = { ...rutinaActual, nombre, fecha, dias };
+    rutinaActual = { ...rutinaActual, nombre, fecha, dias, chat: chatRutina };
     toast('✅ Rutina actualizada');
   } else {
     const res = await fetch(`/api/pacientes/${pacienteActual.id}/rutinas`, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ nombre, fecha, dias })
+      body: JSON.stringify({ nombre, fecha, dias, chat: chatRutina })
     });
     const { id } = await res.json();
-    rutinaActual = { id, nombre, fecha, dias };
+    rutinaActual = { id, nombre, fecha, dias, chat: chatRutina };
     toast('✅ Rutina guardada');
   }
 }
@@ -1234,7 +1237,7 @@ document.addEventListener('keydown', e => {
 // ASISTENTE DE IA PARA ARMAR RUTINAS
 // ════════════════════════════════════════════════════════════════════════════
 function abrirModalIA() {
-  document.getElementById('ia-comando').value = '';
+  document.getElementById('ia-input').value = '';
   document.getElementById('reglas-box').style.display = 'none';
   // mostrar/ocultar la sección "reglas de este paciente" según haya paciente
   const labelPac = document.getElementById('reglas-pac-label');
@@ -1251,8 +1254,9 @@ function abrirModalIA() {
     document.getElementById('nueva-regla-tipo').value = 'general';
   }
   cargarReglas();
-  cargarHistorial();
+  renderChat();
   abrirModal('modal-ia');
+  setTimeout(() => { const i = document.getElementById('ia-input'); if (i) i.focus(); }, 100);
 }
 
 function toggleReglas() {
@@ -1312,6 +1316,45 @@ async function borrarRegla(id) {
 
 // Captura la rutina que está en pantalla (los 3 días) para mandarla como base a corregir.
 // Devuelve un array de días; cada día es un array de filas con contenido real.
+// ════════════════════════════════════════════════════════════════════════════
+// CHAT DEL ASISTENTE (memoria por rutina)
+// chatRutina: array de { rol:'user'|'assistant', texto }
+// ════════════════════════════════════════════════════════════════════════════
+
+function renderChat() {
+  const cont = document.getElementById('ia-chat-msgs');
+  if (!cont) return;
+  if (!chatRutina.length) {
+    cont.innerHTML = `<div style="color:var(--muted);font-size:13px;text-align:center;margin:auto;padding:16px">
+      Contale al asistente qué rutina necesitás para empezar.<br>Ej: "Armá una rutina de 3 días, vuelta a correr post esguince de tobillo".
+    </div>`;
+    return;
+  }
+  cont.innerHTML = chatRutina.map(m => {
+    if (m.rol === 'user') {
+      return `<div style="align-self:flex-end;max-width:85%;background:var(--primary);color:#fff;padding:8px 11px;border-radius:12px 12px 3px 12px;font-size:13px;white-space:pre-wrap">${escapeHtml(m.texto)}</div>`;
+    }
+    return `<div style="align-self:flex-start;max-width:85%;background:#fff;border:1px solid var(--border);padding:8px 11px;border-radius:12px 12px 12px 3px;font-size:13px;white-space:pre-wrap">${escapeHtml(m.texto)}</div>`;
+  }).join('');
+  cont.scrollTop = cont.scrollHeight;
+}
+
+function iaInputKeydown(e) {
+  // Enter envía, Shift+Enter hace salto de línea
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    enviarMensajeIA();
+  }
+}
+
+function nuevaConversacionIA() {
+  if (chatRutina.length && !confirm('¿Empezar una conversación nueva? Se borra el chat de esta rutina (la rutina cargada no se toca).')) return;
+  chatRutina = [];
+  renderChat();
+  guardarChatSiPersistida();
+}
+
+// Captura la rutina que está en pantalla (los 3 días) como base para el asistente
 function rutinaActualParaIA() {
   guardarSesActual();
   const dias = [];
@@ -1328,148 +1371,100 @@ function rutinaActualParaIA() {
   return dias;
 }
 
-// ¿Hay realmente una rutina cargada en pantalla?
-function hayRutinaEnPantalla() {
-  return rutinaActualParaIA().some(d => d.length > 0);
-}
+async function enviarMensajeIA() {
+  const inp = document.getElementById('ia-input');
+  const texto = inp.value.trim();
+  if (!texto) { toast('Escribí un mensaje'); return; }
 
-function generarRutinaIA() { return _ejecutarIA('nueva'); }
-function corregirRutinaIA() { return _ejecutarIA('corregir'); }
+  chatRutina.push({ rol: 'user', texto });
+  inp.value = '';
+  renderChat();
 
-async function _ejecutarIA(modo) {
-  const comando = document.getElementById('ia-comando').value.trim();
-  if (!comando) {
-    toast(modo === 'corregir' ? 'Escribí qué querés cambiar' : 'Escribí qué rutina necesitás');
-    return;
-  }
+  const cont = document.getElementById('ia-chat-msgs');
+  const pens = document.createElement('div');
+  pens.style.cssText = 'align-self:flex-start;background:#fff;border:1px solid var(--border);padding:8px 11px;border-radius:12px;font-size:13px;color:var(--muted)';
+  pens.textContent = '✍️ pensando...';
+  cont.appendChild(pens); cont.scrollTop = cont.scrollHeight;
 
-  const esCorreccion = modo === 'corregir';
-  if (esCorreccion && !hayRutinaEnPantalla()) {
-    toast('No hay una rutina cargada para corregir. Generá una primero.');
-    return;
-  }
-
-  const btnGen = document.getElementById('ia-btn-generar');
-  const btnCor = document.getElementById('ia-btn-corregir');
-  const btn = esCorreccion ? btnCor : btnGen;
-  const textoOriginal = btn.textContent;
-  btnGen.disabled = true; btnCor.disabled = true;
-  btn.textContent = esCorreccion ? '⏳ Corrigiendo...' : '⏳ Generando...';
+  const btn = document.getElementById('ia-btn-enviar');
+  btn.disabled = true; inp.disabled = true;
 
   try {
-    const body = { comando, modo };
-    if (esCorreccion) body.rutinaActual = rutinaActualParaIA();
+    const body = { mensajes: chatRutina, rutinaActual: rutinaActualParaIA() };
     if (pacienteActual) {
       body.paciente = {
-        id: pacienteActual.id,
-        nombre: pacienteActual.nombre,
-        edad: pacienteActual.edad,
-        objetivo: pacienteActual.objetivo,
-        lesiones: pacienteActual.lesiones
+        id: pacienteActual.id, nombre: pacienteActual.nombre,
+        edad: pacienteActual.edad, objetivo: pacienteActual.objetivo, lesiones: pacienteActual.lesiones
       };
     }
-
     const res = await fetch('/api/generar-rutina', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
     });
     const data = await res.json();
 
-    if (!data.ok) { toast(data.error || 'No se pudo generar'); }
-    else {
-      aplicarRutinaIA(data.rutina);
-      cerrarModal('modal-ia');
-      toast(esCorreccion ? '✅ Rutina corregida — revisá los cambios' : '✅ Rutina generada — revisala y ajustá lo que quieras');
+    if (!data.ok) {
+      chatRutina.pop();
+      renderChat();
+      toast(data.error || 'No se pudo procesar');
+    } else {
+      chatRutina.push({ rol: 'assistant', texto: data.respuesta || 'Listo.' });
+      if (data.rutina && Array.isArray(data.rutina.dias)) {
+        aplicarRutinaDias(data.rutina);
+      } else if (data.rutina && data.rutina.nombre) {
+        const nom = document.getElementById('rut-nombre');
+        if (nom && !nom.value) nom.value = data.rutina.nombre;
+      }
+      renderChat();
+      guardarChatSiPersistida();
     }
   } catch (e) {
+    chatRutina.pop();
+    renderChat();
     toast('Error de conexión, probá de nuevo');
   }
-  btnGen.disabled = false; btnCor.disabled = false;
-  btn.textContent = textoOriginal;
+  btn.disabled = false; inp.disabled = false;
+  inp.focus();
 }
 
-// ── HISTORIAL DE COMANDOS DEL PACIENTE ─────────────────────────────────────────
-async function cargarHistorial() {
-  const box = document.getElementById('ia-hist-box');
-  if (!pacienteActual) { if (box) box.style.display = 'none'; return; }
+// Si la rutina ya está guardada, persistimos el chat (y el estado actual) sin intervención.
+async function guardarChatSiPersistida() {
+  if (!rutinaActual || !rutinaActual.id) return; // rutina nueva: el chat se guarda al "Guardar rutina"
   try {
-    const res = await fetch('/api/historial?paciente_id=' + pacienteActual.id);
-    const rows = await res.json();
-    renderHistorial(rows || []);
-  } catch(e) {
-    if (box) box.style.display = 'none';
-  }
+    guardarSesActual();
+    const nombre = document.getElementById('rut-nombre').value.trim() || rutinaActual.nombre || 'Rutina';
+    const fecha = document.getElementById('rut-fecha').value || rutinaActual.fecha || hoy();
+    const dias = { 1: sesState[1], 2: sesState[2], 3: sesState[3] };
+    await fetch(`/api/rutinas/${rutinaActual.id}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre, fecha, dias, chat: chatRutina })
+    });
+    rutinaActual = { ...rutinaActual, nombre, fecha, dias, chat: chatRutina };
+  } catch (e) {}
 }
 
-function renderHistorial(rows) {
-  const box = document.getElementById('ia-hist-box');
-  const cont = document.getElementById('ia-historial');
-  if (!box || !cont) return;
-  if (!rows.length) { box.style.display = 'none'; return; }
-  box.style.display = 'block';
-  cont.innerHTML = rows.map(h => {
-    const etiqueta = h.modo === 'corregir' ? '✏️' : '✨';
-    const cmd = escapeHtml(h.comando);
-    return `
-    <div style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:#fff;border:1px solid var(--border);border-radius:6px;margin-bottom:4px">
-      <span style="font-size:12px" title="${h.modo === 'corregir' ? 'Corrección' : 'Rutina nueva'}">${etiqueta}</span>
-      <button onclick="usarComando(this)" data-cmd="${cmd}" style="flex:1;text-align:left;background:none;border:none;cursor:pointer;font-size:12px;color:var(--text);padding:0" title="Usar de nuevo">${cmd}</button>
-      <button onclick="borrarComando(${h.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:13px" title="Borrar del historial">✕</button>
-    </div>`;
-  }).join('');
-}
-
-function usarComando(btnEl) {
-  const cmd = btnEl.getAttribute('data-cmd') || '';
-  const ta = document.getElementById('ia-comando');
-  const tmp = document.createElement('textarea');
-  tmp.innerHTML = cmd;
-  ta.value = tmp.value;
-  ta.focus();
-}
-
-async function borrarComando(id) {
-  try {
-    await fetch('/api/historial/' + id, { method: 'DELETE' });
-    cargarHistorial();
-  } catch(e) {}
-}
-
-// Convierte la respuesta de la IA en filas de sesState y las carga en el armador
-function aplicarRutinaIA(rutina) {
-  if (!rutina || !Array.isArray(rutina.dias)) { toast('Formato inesperado'); return; }
-
-  // Nombre de la rutina
+// Aplica al armador la rutina (nombre + días) que devolvió el asistente
+function aplicarRutinaDias(rutina) {
+  if (!rutina || !Array.isArray(rutina.dias)) return;
   if (rutina.nombre) document.getElementById('rut-nombre').value = rutina.nombre;
-  // Fecha de hoy si está vacía
   const fechaInp = document.getElementById('rut-fecha');
-  if (fechaInp && !fechaInp.value) fechaInp.value = new Date().toISOString().substring(0,10);
+  if (fechaInp && !fechaInp.value) fechaInp.value = hoy();
 
-  // Reset de los 3 días
   sesState[1] = []; sesState[2] = []; sesState[3] = [];
-
   rutina.dias.forEach((filasDia, idx) => {
     const s = idx + 1;
     if (s > 3) return;
     sesState[s] = (filasDia || []).map(f => ({
-      blq: f.blq || '',
-      cat: f.cat || '',
-      ej:  f.ej || '',
+      blq: f.blq || '', cat: f.cat || '', ej: f.ej || '',
       ser: f.ser != null ? String(f.ser) : '',
-      r1:  f.r1 != null ? String(f.r1) : '',
-      r2:  f.r2 != null ? String(f.r2) : '',
-      r3:  f.r3 != null ? String(f.r3) : '',
-      r4:  f.r4 != null ? String(f.r4) : '',
+      r1: f.r1 != null ? String(f.r1) : '',
+      r2: f.r2 != null ? String(f.r2) : '',
+      r3: f.r3 != null ? String(f.r3) : '',
+      r4: f.r4 != null ? String(f.r4) : '',
       kg1:'', kg2:'', kg3:'', kg4:'',
       obs: f.obs || (f.nuevo ? '⚠ ejercicio nuevo (fuera del banco)' : '')
     }));
   });
-
-  // Rellenar días vacíos con filas por defecto para que la tabla se vea bien
   [1,2,3].forEach(s => { if (!sesState[s].length) sesState[s] = defaultFilas(); });
-
-  // Mostrar día 1
   currentSes = 1;
   document.querySelectorAll('.stab').forEach((b,i) => b.classList.toggle('active', i===0));
   renderSesion();
