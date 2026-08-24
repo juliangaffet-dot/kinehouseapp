@@ -941,35 +941,36 @@ function generarPDF(paciente, nombreRutina, fecha, dias) {
   //   - logo real KINE HOUSE arriba a la derecha
   // Se llama al inicio Y en cada addPage.
   // ══════════════════════════════════════════════
-  const BAND_H = 32;
+  const BAND_H = 30;
+  const MARGIN = 6;    // marco crema alrededor del bloque oliva (como Canva)
   function pintarFondo() {
-    // fondo oliva
-    doc.setFillColor(...OLIVE);
-    doc.rect(0, 0, W, H, 'F');
-    // banda crema full bleed
+    // fondo crema a toda página (será el "marco")
     doc.setFillColor(...CREAM);
-    doc.rect(0, 0, W, BAND_H, 'F');
-    // textura de la banda (granulado sutil, determinístico)
+    doc.rect(0, 0, W, H, 'F');
+    // bloque oliva grande abajo, con margen crema a los lados
+    doc.setFillColor(...OLIVE);
+    doc.rect(MARGIN, BAND_H, W-MARGIN*2, H-BAND_H-MARGIN, 'F');
+    // textura de la banda crema superior (granulado sutil, determinístico)
     doc.setFillColor(223, 218, 199);
     let seed = 7;
     const rnd = () => { seed = (seed*9301 + 49297) % 233280; return seed/233280; };
     for (let i=0; i<650; i++) doc.circle(rnd()*W, rnd()*BAND_H, 0.14, 'F');
     // logo real arriba a la derecha
-    const LW = 34, LH = LW/2.16;   // ancho x alto respetando el ratio
+    const LW = 34, LH = LW/2.16;
     try { doc.addImage(LOGO_KH, 'PNG', W-MR-LW, (BAND_H-LH)/2, LW, LH); } catch(e){}
   }
 
   pintarFondo();
 
-  // ══════════ Datos del paciente en la banda (izquierda) ══════════
+  // ══════════ Nombre del paciente (dentro de la banda crema, izquierda) ══════════
   doc.setTextColor(...OLIVE_DK);
   doc.setFont('helvetica','bold');
-  doc.setFontSize(22);
-  doc.text((paciente.nombre||'Paciente').toUpperCase(), ML, 17);
+  doc.setFontSize(18);
+  doc.text((paciente.nombre||'Paciente').toUpperCase(), ML, 15);
   doc.setFont('helvetica','normal');
-  doc.setFontSize(8.5);
+  doc.setFontSize(8);
   doc.setTextColor(...MUTED);
-  doc.text('Lic. Julian Gaffet   ·   M.P. 1321', ML, 24);
+  doc.text('Lic. Julian Gaffet   ·   M.P. 1321', ML, 21);
 
   // ══════════ Franja de rutina + fecha (sobre el oliva) ══════════
   let y = BAND_H + 6;
