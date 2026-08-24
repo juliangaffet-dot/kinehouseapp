@@ -1023,13 +1023,13 @@ function generarPDF(paciente, nombreRutina, fecha, dias) {
     doc.setFont('helvetica','normal');
     doc.setFontSize(7);
     doc.setTextColor(230,228,210);
-    doc.text(filas.length + ' ejercicios  ·  toca el ejercicio para ver el video', W-MR-3, y+5.5, {align:'right'});
-    y += 10;
+    doc.text(filas.length + ' ejercicios  -  Click en el ejercicio para ver el video', W-MR-4, y+5.5, {align:'right'});
+    y += 9;
 
     const cols = [
-      {label:'BLQ', w:8,  align:'center'},
-      {label:'EJERCICIO', w:52, align:'left'},
-      {label:'SER', w:8, align:'center'},
+      {label:'BLQ', w:10, align:'center'},
+      {label:'EJERCICIO', w:50, align:'left'},
+      {label:'SER.', w:9, align:'center'},
       {label:'R1',  w:8, align:'center'},
       {label:'R2',  w:8, align:'center'},
       {label:'R3',  w:8, align:'center'},
@@ -1040,76 +1040,89 @@ function generarPDF(paciente, nombreRutina, fecha, dias) {
       {label:'KG S4', w:12, align:'center'},
     ];
     const usleft = cols.reduce((a,c)=>a+c.w,0);
-    cols.push({label:'OBS', w:CW-usleft, align:'left'});
+    cols.push({label:'OBS.', w:CW-usleft, align:'left'});
+    const BLQ_W = cols[0].w;
 
-    // Header de columnas (oscuro, como Canva)
-    doc.setFillColor(...DARK);
-    doc.rect(ML, y, CW, 6, 'F');
-    doc.setFont('helvetica','bold');
-    doc.setFontSize(6.8);
-    doc.setTextColor(...CREAM);
-    let xc = ML;
-    cols.forEach(c => {
-      if (c.align==='center') doc.text(c.label, xc+c.w/2, y+4, {align:'center'});
-      else doc.text(c.label, xc+2, y+4);
-      xc += c.w;
-    });
-    y += 6;
+    // Función que dibuja el header de columnas (oscuro)
+    const drawColHeader = () => {
+      doc.setFillColor(...DARK);
+      doc.rect(ML, y, CW, 6, 'F');
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(6.8);
+      doc.setTextColor(...CREAM);
+      let xh = ML;
+      cols.forEach(c => {
+        if (c.align==='center') doc.text(c.label, xh+c.w/2, y+4, {align:'center'});
+        else doc.text(c.label, xh+2, y+4);
+        xh += c.w;
+      });
+      y += 6;
+    };
+    drawColHeader();
+
+    const tablaTop = y;  // arranca el cuerpo de la tabla
 
     filas.forEach((r, ri) => {
-      if (y+rowH > H-18) {
+      if (y+rowH > H-16) {
+        // cerrar franja BLQ del tramo actual antes de saltar
+        doc.setFillColor(...OLIVE);
+        doc.rect(ML, tablaTop, BLQ_W, y-tablaTop, 'F'); // (por si acaso, se repinta abajo)
         doc.addPage(); pintarFondo(); y = BAND_H + 6;
-        // repetir header columnas
-        doc.setFillColor(...DARK);
-        doc.rect(ML, y, CW, 6, 'F');
-        doc.setFont('helvetica','bold'); doc.setFontSize(6.8); doc.setTextColor(...CREAM);
-        let xh=ML; cols.forEach(c=>{ if(c.align==='center')doc.text(c.label,xh+c.w/2,y+4,{align:'center'}); else doc.text(c.label,xh+2,y+4); xh+=c.w; });
-        y += 6;
+        drawColHeader();
       }
-      // fila: siempre blanca; alternamos con un tinte crema muy suave
-      doc.setFillColor(...(ri%2===0 ? WHITE : [248,245,235]));
-      doc.rect(ML, y, CW, rowH, 'F');
+      // fondo de la fila: alternamos blanco / tinte oliva muy claro
+      doc.setFillColor(...(ri%2===0 ? WHITE : [237,238,225]));
+      doc.rect(ML+BLQ_W, y, CW-BLQ_W, rowH, 'F');
+      // franja BLQ (oliva) a la izquierda
+      doc.setFillColor(...OLIVE);
+      doc.rect(ML, y, BLQ_W, rowH, 'F');
 
-      xc = ML;
-      // BLQ
-      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...OLIVE_DK);
-      doc.text(r.blq||'', xc+cols[0].w/2, y+4.4, {align:'center'});
-      xc += cols[0].w;
+      let xc = ML;
+      // BLQ (texto crema sobre la franja oliva)
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...CREAM);
+      doc.text(r.blq||'', xc+BLQ_W/2, y+4.4, {align:'center'});
+      xc += BLQ_W;
 
-      // Ejercicio + link a video
+      // Ejercicio + link a video (con subrayado)
       const ejNombre = r.ej || '';
       const ytUrl = getVideoUrl(ejNombre);
-      doc.setFont('helvetica','normal'); doc.setFontSize(8.3); doc.setTextColor(...OLIVE_DK);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.3); doc.setTextColor(...INK);
       let ejLabel = ejNombre;
-      while (doc.getTextWidth(ejLabel) > cols[1].w-3 && ejLabel.length > 5) ejLabel = ejLabel.slice(0,-1);
+      while (doc.getTextWidth(ejLabel) > cols[1].w-4 && ejLabel.length > 5) ejLabel = ejLabel.slice(0,-1);
       if (ejLabel !== ejNombre) ejLabel += '…';
       if (ytUrl) {
-        doc.textWithLink(ejLabel, xc+2, y+4.4, { url: ytUrl });
+        doc.textWithLink(ejLabel, xc+2, y+4.2, { url: ytUrl });
         doc.setDrawColor(...OLIVE);
-        doc.setLineWidth(0.15);
-        doc.line(xc+2, y+5.1, xc+2+doc.getTextWidth(ejLabel), y+5.1);
+        doc.setLineWidth(0.2);
+        doc.line(xc+2, y+5.2, xc+2+doc.getTextWidth(ejLabel), y+5.2);
       } else {
-        doc.text(ejLabel, xc+2, y+4.4);
+        doc.text(ejLabel, xc+2, y+4.2);
       }
       xc += cols[1].w;
 
-      // Resto
+      // Resto de columnas
       const resto = [r.ser||'', r.r1||'', r.r2||'', r.r3||'', r.r4||'', r.kg1||'', r.kg2||'', r.kg3||'', r.kg4||'', r.obs||''];
       doc.setFont('helvetica','normal'); doc.setFontSize(7.8); doc.setTextColor(...INK);
       for (let i=0; i<resto.length; i++){
         const col = cols[2+i]; if(!col) break;
         const txt = String(resto[i]||'');
         if (col.align==='center') doc.text(txt, xc+col.w/2, y+4.4, {align:'center'});
-        else doc.text(txt.substring(0,22), xc+2, y+4.4);
+        else doc.text(txt.substring(0,24), xc+2, y+4.4);
         xc += col.w;
       }
-      // separador horizontal muy sutil
-      doc.setDrawColor(...BORDER); doc.setLineWidth(0.15);
-      doc.line(ML, y+rowH, ML+CW, y+rowH);
+      // líneas divisorias verticales suaves entre columnas de datos
+      doc.setDrawColor(...BORDER); doc.setLineWidth(0.1);
+      let xl = ML + BLQ_W + cols[1].w;
+      for (let ci=2; ci<cols.length; ci++){ doc.line(xl, y, xl, y+rowH); xl += cols[ci].w; }
+      // separador horizontal
+      doc.line(ML+BLQ_W, y+rowH, ML+CW, y+rowH);
       y += rowH;
     });
 
-    y += 5;
+    // borde exterior de la tabla
+    doc.setDrawColor(...DARK); doc.setLineWidth(0.2);
+    doc.rect(ML, tablaTop, CW, y-tablaTop);
+    y += 6;
   });
 
   // ══════════ Pie de página en cada página ══════════
