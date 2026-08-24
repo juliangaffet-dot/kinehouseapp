@@ -922,7 +922,7 @@ const LOGO_KH = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHcAAAA3CAYAAAA2Y
 function generarPDF(paciente, nombreRutina, fecha, dias) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-  const W = 210, H = 297, ML = 12, MR = 12;
+  const W = 210, H = 297, ML = 8, MR = 8;
   const CW = W - ML - MR;
 
   // Paleta de marca (referencia)
@@ -943,15 +943,13 @@ function generarPDF(paciente, nombreRutina, fecha, dias) {
   // Se llama al inicio Y en cada addPage.
   // ══════════════════════════════════════════════
   const BAND_H = 30;
-  const MARGIN = 6;    // marco crema alrededor del bloque oliva (como Canva)
   function pintarFondo() {
-    // fondo crema a toda página (será el "marco")
-    doc.setFillColor(...CREAM);
-    doc.rect(0, 0, W, H, 'F');
-    // bloque oliva grande abajo, con margen crema a los lados
+    // fondo oliva a TODA la página
     doc.setFillColor(...OLIVE);
-    doc.rect(MARGIN, BAND_H, W-MARGIN*2, H-BAND_H-MARGIN, 'F');
-    // textura de la banda crema superior (granulado sutil, determinístico)
+    doc.rect(0, 0, W, H, 'F');
+    // banda crema full-bleed arriba (con textura)
+    doc.setFillColor(...CREAM);
+    doc.rect(0, 0, W, BAND_H, 'F');
     doc.setFillColor(223, 218, 199);
     let seed = 7;
     const rnd = () => { seed = (seed*9301 + 49297) % 233280; return seed/233280; };
@@ -1064,22 +1062,16 @@ function generarPDF(paciente, nombreRutina, fecha, dias) {
 
     filas.forEach((r, ri) => {
       if (y+rowH > H-16) {
-        // cerrar franja BLQ del tramo actual antes de saltar
-        doc.setFillColor(...OLIVE);
-        doc.rect(ML, tablaTop, BLQ_W, y-tablaTop, 'F'); // (por si acaso, se repinta abajo)
         doc.addPage(); pintarFondo(); y = BAND_H + 6;
         drawColHeader();
       }
-      // fondo de la fila: alternamos blanco / tinte oliva muy claro
+      // fondo de la fila completa (alternamos blanco / tinte oliva muy claro)
       doc.setFillColor(...(ri%2===0 ? WHITE : [237,238,225]));
-      doc.rect(ML+BLQ_W, y, CW-BLQ_W, rowH, 'F');
-      // franja BLQ (oliva) a la izquierda
-      doc.setFillColor(...OLIVE);
-      doc.rect(ML, y, BLQ_W, rowH, 'F');
+      doc.rect(ML, y, CW, rowH, 'F');
 
       let xc = ML;
-      // BLQ (texto crema sobre la franja oliva)
-      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...CREAM);
+      // BLQ (texto oliva oscuro, sin franja de color)
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...OLIVE_DK);
       doc.text(r.blq||'', xc+BLQ_W/2, y+4.4, {align:'center'});
       xc += BLQ_W;
 
