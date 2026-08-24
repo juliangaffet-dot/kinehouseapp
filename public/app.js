@@ -918,127 +918,134 @@ async function descargarPDFById(id, nombre) {
   generarPDF(pacienteActual, r.nombre, r.fecha, ses);
 }
 
+const LOGO_KH = 'data:image/png;base64,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';
 function generarPDF(paciente, nombreRutina, fecha, dias) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-  const W = 210, H = 297, ML = 12, MR = 12, MT = 12;
+  const W = 210, H = 297, ML = 12, MR = 12;
   const CW = W - ML - MR;
 
-  // ── Paleta de marca (referencia Canva: crema + oliva) ──
-  const OLIVE      = [138,140,109];  // verde oliva de marca
-  const OLIVE_DK   = [86,88,58];     // oliva oscuro (wordmark, acentos)
-  const CREAM      = [233,229,212];  // banda superior
-  const CREAM_ROW  = [244,242,233];  // fila alterna
-  const INK        = [45,45,42];     // texto principal
-  const MUTED      = [122,120,98];   // texto secundario
-  const WHITE      = [255,255,255];
-  const BORDER     = [214,210,190];
+  // Paleta de marca (referencia)
+  const OLIVE     = [138,140,109];   // fondo oliva de la página
+  const OLIVE_DK  = [86,88,58];      // acentos, encabezados
+  const CREAM     = [233,229,212];   // banda crema
+  const INK       = [45,45,42];      // texto principal
+  const MUTED     = [122,120,98];    // texto secundario
+  const WHITE     = [255,255,255];
+  const BORDER    = [214,210,190];
 
-  // ══════════ ENCABEZADO estilo portada ══════════
-  // Banda crema full-bleed
-  const BAND = 30;
-  doc.setFillColor(...CREAM);
-  doc.rect(0, 0, W, BAND, 'F');
-  // textura sutil (granulado de papel)
-  doc.setFillColor(223, 218, 199);
-  let seed = 7;
-  const rnd = () => { seed = (seed*9301 + 49297) % 233280; return seed/233280; };
-  for (let i=0;i<520;i++){ doc.circle(rnd()*W, rnd()*BAND, 0.13, 'F'); }
+  // ══════════════════════════════════════════════
+  // Función que pinta el "papel" de una página:
+  //   - fondo oliva a toda página
+  //   - banda crema arriba (full bleed) con textura
+  //   - logo real KINE HOUSE arriba a la derecha
+  // Se llama al inicio Y en cada addPage.
+  // ══════════════════════════════════════════════
+  const BAND_H = 32;
+  function pintarFondo() {
+    // fondo oliva
+    doc.setFillColor(...OLIVE);
+    doc.rect(0, 0, W, H, 'F');
+    // banda crema full bleed
+    doc.setFillColor(...CREAM);
+    doc.rect(0, 0, W, BAND_H, 'F');
+    // textura de la banda (granulado sutil, determinístico)
+    doc.setFillColor(223, 218, 199);
+    let seed = 7;
+    const rnd = () => { seed = (seed*9301 + 49297) % 233280; return seed/233280; };
+    for (let i=0; i<650; i++) doc.circle(rnd()*W, rnd()*BAND_H, 0.14, 'F');
+    // logo real arriba a la derecha
+    const LW = 34, LH = LW/2.16;   // ancho x alto respetando el ratio
+    try { doc.addImage(LOGO_KH, 'PNG', W-MR-LW, (BAND_H-LH)/2, LW, LH); } catch(e){}
+  }
 
-  // Wordmark KINE HOUSE (derecha, apilado, como la referencia)
-  doc.setTextColor(...OLIVE_DK);
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(16);
-  doc.text('KINE', W-MR, 12, {align:'right'});
-  doc.text('HOUSE', W-MR, 19, {align:'right'});
-  doc.setFont('helvetica','normal');
-  doc.setFontSize(5);
-  doc.setTextColor(...MUTED);
-  doc.text('R E H A B I L I T A C I O N   &   M O V I M I E N T O', W-MR, 23.5, {align:'right'});
+  pintarFondo();
 
-  // Nombre del paciente (izquierda, grande, oliva oscuro)
+  // ══════════ Datos del paciente en la banda (izquierda) ══════════
   doc.setTextColor(...OLIVE_DK);
   doc.setFont('helvetica','bold');
   doc.setFontSize(22);
-  doc.text((paciente.nombre||'Paciente').toUpperCase(), ML, 15);
-  doc.setFont('helvetica','normal');
-  doc.setFontSize(8);
-  doc.setTextColor(...MUTED);
-  doc.text('Lic. Julian Gaffet   ·   M.P. 1321', ML, 21.5);
-
-  // ══════════ Franja oliva con datos de la rutina ══════════
-  const STRIP = 13;
-  doc.setFillColor(...OLIVE);
-  doc.rect(0, BAND, W, STRIP, 'F');
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(11);
-  doc.setTextColor(...WHITE);
-  doc.text(nombreRutina || 'Rutina', ML, BAND+8.5);
+  doc.text((paciente.nombre||'Paciente').toUpperCase(), ML, 17);
   doc.setFont('helvetica','normal');
   doc.setFontSize(8.5);
-  doc.setTextColor(240,240,228);
-  doc.text(formatFecha(fecha), W-MR, BAND+8.5, {align:'right'});
+  doc.setTextColor(...MUTED);
+  doc.text('Lic. Julian Gaffet   ·   M.P. 1321', ML, 24);
 
-  let y = BAND + STRIP + 7;
+  // ══════════ Franja de rutina + fecha (sobre el oliva) ══════════
+  let y = BAND_H + 6;
+  doc.setFillColor(...OLIVE_DK);
+  doc.roundedRect(ML, y, CW, 10, 1.5, 1.5, 'F');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(11);
+  doc.setTextColor(...CREAM);
+  doc.text(nombreRutina || 'Rutina', ML+4, y+6.5);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(9);
+  doc.setTextColor(240,240,220);
+  doc.text(formatFecha(fecha), W-MR-4, y+6.5, {align:'right'});
+  y += 15;
 
-  // Objetivo / lesiones
+  // ══════════ Objetivo / lesiones (opcional) ══════════
   if (paciente.objetivo || paciente.lesiones) {
-    doc.setFillColor(...CREAM_ROW);
-    doc.setDrawColor(...BORDER);
+    doc.setFillColor(...CREAM);
+    doc.setDrawColor(...OLIVE_DK);
     doc.setLineWidth(0.3);
     doc.roundedRect(ML, y, CW, 8, 1.5, 1.5, 'FD');
     doc.setFont('helvetica','normal');
-    doc.setFontSize(8.5);
-    doc.setTextColor(...MUTED);
+    doc.setFontSize(9);
+    doc.setTextColor(...OLIVE_DK);
     let info = '';
     if (paciente.objetivo) info += 'Objetivo: ' + paciente.objetivo;
     if (paciente.objetivo && paciente.lesiones) info += '     ';
     if (paciente.lesiones) info += 'Lesiones: ' + paciente.lesiones;
-    doc.text(info, ML+4, y+5.2);
+    doc.text(info, ML+4, y+5.4);
     y += 12;
   }
 
   // ══════════ TABLAS por día ══════════
+  const rowH = 6.5;
   [1,2,3].forEach(si => {
     const filas = (dias[si]||[]).filter(r => r.ej && r.ej.trim());
     if (!filas.length) return;
-    if (y + 16 + filas.length*6.5 > H-16) { doc.addPage(); y = MT; }
+    if (y + 16 + filas.length*rowH > H-18) {
+      doc.addPage(); pintarFondo(); y = BAND_H + 6;
+    }
 
-    // Header del día (oliva de marca)
-    doc.setFillColor(...OLIVE);
+    // Header del día (oliva oscuro)
+    doc.setFillColor(...OLIVE_DK);
     doc.roundedRect(ML, y, CW, 8, 1.5, 1.5, 'F');
     doc.setFont('helvetica','bold');
     doc.setFontSize(10);
-    doc.setTextColor(...WHITE);
+    doc.setTextColor(...CREAM);
     doc.text('DIA ' + si, ML+4, y+5.5);
     doc.setFont('helvetica','normal');
     doc.setFontSize(7);
-    doc.setTextColor(238,238,225);
+    doc.setTextColor(230,228,210);
     doc.text(filas.length + ' ejercicios  ·  toca el ejercicio para ver el video', W-MR-3, y+5.5, {align:'right'});
     y += 10;
 
     const cols = [
-      {label:'BLQ', w:8, align:'center'},
-      {label:'EJERCICIO', w:60, align:'left'},
-      {label:'SER', w:9, align:'center'},
-      {label:'R1', w:9, align:'center'},
-      {label:'R2', w:9, align:'center'},
-      {label:'R3', w:9, align:'center'},
-      {label:'R4', w:9, align:'center'},
-      {label:'KG S1', w:15, align:'center'},
-      {label:'KG S2', w:15, align:'center'},
-      {label:'KG S3', w:15, align:'center'},
-      {label:'KG S4', w:15, align:'center'},
+      {label:'BLQ', w:8,  align:'center'},
+      {label:'EJERCICIO', w:52, align:'left'},
+      {label:'SER', w:8, align:'center'},
+      {label:'R1',  w:8, align:'center'},
+      {label:'R2',  w:8, align:'center'},
+      {label:'R3',  w:8, align:'center'},
+      {label:'R4',  w:8, align:'center'},
+      {label:'KG S1', w:12, align:'center'},
+      {label:'KG S2', w:12, align:'center'},
+      {label:'KG S3', w:12, align:'center'},
+      {label:'KG S4', w:12, align:'center'},
     ];
     const usleft = cols.reduce((a,c)=>a+c.w,0);
     cols.push({label:'OBS', w:CW-usleft, align:'left'});
 
-    // Header de columnas (oliva oscuro)
-    doc.setFillColor(...OLIVE_DK);
+    // Header de columnas (crema)
+    doc.setFillColor(...CREAM);
     doc.rect(ML, y, CW, 6, 'F');
     doc.setFont('helvetica','bold');
-    doc.setFontSize(6.5);
-    doc.setTextColor(...CREAM);
+    doc.setFontSize(6.8);
+    doc.setTextColor(...OLIVE_DK);
     let xc = ML;
     cols.forEach(c => {
       if (c.align==='center') doc.text(c.label, xc+c.w/2, y+4, {align:'center'});
@@ -1047,19 +1054,18 @@ function generarPDF(paciente, nombreRutina, fecha, dias) {
     });
     y += 6;
 
-    const rowH = 6.5;
     filas.forEach((r, ri) => {
-      if (y+rowH > H-16) {
-        doc.addPage(); y = MT;
-        // repetir header de columnas en la página nueva
-        doc.setFillColor(...OLIVE_DK);
+      if (y+rowH > H-18) {
+        doc.addPage(); pintarFondo(); y = BAND_H + 6;
+        // repetir header columnas
+        doc.setFillColor(...CREAM);
         doc.rect(ML, y, CW, 6, 'F');
-        doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...CREAM);
+        doc.setFont('helvetica','bold'); doc.setFontSize(6.8); doc.setTextColor(...OLIVE_DK);
         let xh=ML; cols.forEach(c=>{ if(c.align==='center')doc.text(c.label,xh+c.w/2,y+4,{align:'center'}); else doc.text(c.label,xh+2,y+4); xh+=c.w; });
         y += 6;
       }
-      const bg = ri%2===0 ? CREAM_ROW : WHITE;
-      doc.setFillColor(...bg);
+      // fila: siempre blanca; alternamos con un tinte crema muy suave
+      doc.setFillColor(...(ri%2===0 ? WHITE : [248,245,235]));
       doc.rect(ML, y, CW, rowH, 'F');
 
       xc = ML;
@@ -1068,7 +1074,7 @@ function generarPDF(paciente, nombreRutina, fecha, dias) {
       doc.text(r.blq||'', xc+cols[0].w/2, y+4.4, {align:'center'});
       xc += cols[0].w;
 
-      // Ejercicio (link a video)
+      // Ejercicio + link a video
       const ejNombre = r.ej || '';
       const ytUrl = getVideoUrl(ejNombre);
       doc.setFont('helvetica','normal'); doc.setFontSize(8.3); doc.setTextColor(...OLIVE_DK);
@@ -1088,41 +1094,33 @@ function generarPDF(paciente, nombreRutina, fecha, dias) {
       // Resto
       const resto = [r.ser||'', r.r1||'', r.r2||'', r.r3||'', r.r4||'', r.kg1||'', r.kg2||'', r.kg3||'', r.kg4||'', r.obs||''];
       doc.setFont('helvetica','normal'); doc.setFontSize(7.8); doc.setTextColor(...INK);
-      for (let i=0;i<resto.length;i++){
+      for (let i=0; i<resto.length; i++){
         const col = cols[2+i]; if(!col) break;
         const txt = String(resto[i]||'');
         if (col.align==='center') doc.text(txt, xc+col.w/2, y+4.4, {align:'center'});
         else doc.text(txt.substring(0,22), xc+2, y+4.4);
         xc += col.w;
       }
-      // separador horizontal
+      // separador horizontal muy sutil
       doc.setDrawColor(...BORDER); doc.setLineWidth(0.15);
       doc.line(ML, y+rowH, ML+CW, y+rowH);
       y += rowH;
     });
 
-    // borde exterior de la tabla
-    y += 4;
+    y += 5;
   });
 
-  // Nota al pie
-  if (y+10 < H-10) {
-    doc.setDrawColor(...OLIVE); doc.setLineWidth(0.4);
-    doc.line(ML, y, ML+CW, y);
-    y += 4.5;
-    doc.setFont('helvetica','italic'); doc.setFontSize(7.5); doc.setTextColor(...MUTED);
-    doc.text('Los ejercicios son enlaces: tocalos para ver el video de tecnica en YouTube.', ML, y);
-  }
-
-  // Pie de página en todas las páginas
+  // ══════════ Pie de página en cada página ══════════
   const totalPages = doc.internal.getNumberOfPages();
-  for(let i=1;i<=totalPages;i++){
+  for(let i=1; i<=totalPages; i++){
     doc.setPage(i);
-    doc.setDrawColor(...OLIVE); doc.setLineWidth(0.4);
-    doc.line(ML, H-9, ML+CW, H-9);
+    // barra crema en el pie
+    doc.setFillColor(...CREAM);
+    doc.rect(0, H-10, W, 10, 'F');
+    doc.setFont('helvetica','italic'); doc.setFontSize(7); doc.setTextColor(...OLIVE_DK);
+    doc.text('Los ejercicios son enlaces: tocalos para ver el video de tecnica en YouTube.', ML, H-3.5);
     doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...MUTED);
-    doc.text('Kine House  ·  Generado el ' + new Date().toLocaleDateString('es-AR'), ML, H-5);
-    doc.text(i + ' / ' + totalPages, W-MR, H-5, {align:'right'});
+    doc.text(i + ' / ' + totalPages, W-MR, H-3.5, {align:'right'});
   }
 
   doc.save('rutina_' + (paciente.nombre||'paciente').replace(/ /g,'_') + '_' + (nombreRutina||'').replace(/ /g,'_') + '.pdf');
