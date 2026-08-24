@@ -942,7 +942,7 @@ function generarPDF(paciente, nombreRutina, fecha, dias) {
   //   - logo real KINE HOUSE arriba a la derecha
   // Se llama al inicio Y en cada addPage.
   // ══════════════════════════════════════════════
-  const BAND_H = 30;
+  const BAND_H = 34;
   function pintarFondo() {
     // fondo oliva a TODA la página
     doc.setFillColor(...OLIVE);
@@ -955,52 +955,37 @@ function generarPDF(paciente, nombreRutina, fecha, dias) {
     const rnd = () => { seed = (seed*9301 + 49297) % 233280; return seed/233280; };
     for (let i=0; i<650; i++) doc.circle(rnd()*W, rnd()*BAND_H, 0.14, 'F');
     // logo real arriba a la derecha
-    const LW = 34, LH = LW/2.16;
-    try { doc.addImage(LOGO_KH, 'PNG', W-MR-LW, (BAND_H-LH)/2, LW, LH); } catch(e){}
+    const LW = 32, LH = LW/2.16;
+    try { doc.addImage(LOGO_KH, 'PNG', W-MR-LW, 5, LW, LH); } catch(e){}
   }
 
   pintarFondo();
 
-  // ══════════ Nombre del paciente (dentro de la banda crema, izquierda) ══════════
+  // ══════════ Encabezado: todo dentro de la banda crema ══════════
+  // Nombre del paciente (grande)
   doc.setTextColor(...OLIVE_DK);
   doc.setFont('helvetica','bold');
   doc.setFontSize(18);
-  doc.text((paciente.nombre||'Paciente').toUpperCase(), ML, 15);
+  doc.text((paciente.nombre||'Paciente').toUpperCase(), ML, 13);
+  // Lic + matrícula
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...MUTED);
+  doc.text('Lic. Julian Gaffet   ·   M.P. 1321', ML, 18.5);
+  // Nombre de la rutina + fecha
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10.5);
+  doc.setTextColor(...OLIVE_DK);
+  doc.text(nombreRutina || 'Rutina', ML, 26);
   doc.setFont('helvetica','normal');
   doc.setFontSize(8);
   doc.setTextColor(...MUTED);
-  doc.text('Lic. Julian Gaffet   ·   M.P. 1321', ML, 21);
+  let metaObj = formatFecha(fecha);
+  if (paciente.objetivo) metaObj += '   ·   Objetivo: ' + paciente.objetivo;
+  if (paciente.lesiones) metaObj += '   ·   Lesiones: ' + paciente.lesiones;
+  doc.text(metaObj, ML, 31);
 
-  // ══════════ Franja de rutina + fecha (sobre el oliva) ══════════
-  let y = BAND_H + 6;
-  doc.setFillColor(...OLIVE_DK);
-  doc.roundedRect(ML, y, CW, 10, 1.5, 1.5, 'F');
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(11);
-  doc.setTextColor(...CREAM);
-  doc.text(nombreRutina || 'Rutina', ML+4, y+6.5);
-  doc.setFont('helvetica','normal');
-  doc.setFontSize(9);
-  doc.setTextColor(240,240,220);
-  doc.text(formatFecha(fecha), W-MR-4, y+6.5, {align:'right'});
-  y += 15;
-
-  // ══════════ Objetivo / lesiones (opcional) ══════════
-  if (paciente.objetivo || paciente.lesiones) {
-    doc.setFillColor(...CREAM);
-    doc.setDrawColor(...OLIVE_DK);
-    doc.setLineWidth(0.3);
-    doc.roundedRect(ML, y, CW, 8, 1.5, 1.5, 'FD');
-    doc.setFont('helvetica','normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...OLIVE_DK);
-    let info = '';
-    if (paciente.objetivo) info += 'Objetivo: ' + paciente.objetivo;
-    if (paciente.objetivo && paciente.lesiones) info += '     ';
-    if (paciente.lesiones) info += 'Lesiones: ' + paciente.lesiones;
-    doc.text(info, ML+4, y+5.4);
-    y += 12;
-  }
+  let y = BAND_H + 5;
 
   // ══════════ TABLAS por día ══════════
   const rowH = 6.5;
